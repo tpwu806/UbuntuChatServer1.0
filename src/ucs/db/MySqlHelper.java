@@ -12,9 +12,9 @@ public class MySqlHelper {
 	ResultSet rs=null;
 	
 	String driver = "com.mysql.jdbc.Driver";
-	String url = "jdbc:mysql://127.0.0.1:3306/kilo";
+	String url = "jdbc:mysql://192.168.0.121:3306/chat";
 	String user = "root";
-	String pwd = "522300";
+	String pwd = "123456";
 	int sum=0;
 	//构造函数，初始化ct
 	public MySqlHelper()

@@ -121,11 +121,10 @@ public class UbuntuChatServer {
 					switch (bean.getType()) {
 					//µÇÂ¼
 					case 11: {
-						
-						System.out.println(bean.getType()+bean.getName()+bean.getPwd());
+						System.out.println(bean.getType()+":"+bean.getName()+bean.getPwd());
 						UserModel user=new UserModel();
 						String power=new String(user.checkUser(bean.getName().trim(), bean.getPwd()).trim());
-						if(power.equals("user")){
+						if(power.equals("root")){
 							bean=new ChatBean();
 							bean.setType(110);
 							oos = new ObjectOutputStream(
