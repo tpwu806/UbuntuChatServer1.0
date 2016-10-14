@@ -1,4 +1,4 @@
-package uc.common;
+package uc.pub.common;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -18,7 +18,16 @@ public class ChatBean implements Serializable {
 	private String timer;
 
 	private String name;
+	
 	private String pwd;
+	
+	private String fileName;
+
+	private int size;
+
+	private String ip;
+
+	private int port;
 
 	public String getPwd() {
 		return pwd;
@@ -27,14 +36,6 @@ public class ChatBean implements Serializable {
 	public void setPwd(String pwd) {
 		this.pwd = pwd;
 	}
-
-	private String fileName;
-
-	private int size;
-
-	private String ip;
-
-	private int port;
 
 	public int getSize() {
 		return size;

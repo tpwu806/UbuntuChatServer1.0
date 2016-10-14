@@ -1,11 +1,11 @@
-package ucs.db;
+package uc.dal.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-public class MySqlHelper {
+public class DBUtils {
 	//定义需要的对象
 	Connection con=null;
 	PreparedStatement ps=null;
@@ -17,7 +17,7 @@ public class MySqlHelper {
 	String pwd = "123456";
 	int sum=0;
 	//构造函数，初始化ct
-	public MySqlHelper()
+	public DBUtils()
 	{
 		try {
 			//加载驱动

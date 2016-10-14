@@ -1,4 +1,4 @@
-package ucs.db;
+package uc.dal.db;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -14,12 +14,12 @@ import javax.swing.table.AbstractTableModel;
 		
 		public boolean UpdateModel(String sql,String []params)
 		{ 
-			MySqlHelper hp=new MySqlHelper();
+			DBUtils hp=new DBUtils();
 			return hp.updateExecete(sql,params);
 		}
 		public int getNum(String sql)
 		{
-			MySqlHelper hp=new MySqlHelper();
+			DBUtils hp=new DBUtils();
 			int sum=hp.queryExecute(sql);
 			return sum;
 		}
@@ -34,7 +34,7 @@ import javax.swing.table.AbstractTableModel;
 //			this.colums.add("姓名");
 //			this.colums.add("性别");
 //			this.colums.add("职位");
-			MySqlHelper hp=new MySqlHelper();
+			DBUtils hp=new DBUtils();
 			ResultSet rs=hp.queryExecute(sql, params);
 			try {
 				ResultSetMetaData rsmd=rs.getMetaData();

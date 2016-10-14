@@ -1,18 +1,18 @@
-package ucs.db;
+package uc.dal.db;
 
 import java.sql.ResultSet;
 
 
-public class UserModel {
+public class UserService {
 	
 	public String checkUser(String uid,String p)
 	{
 		String power = null;
-		MySqlHelper hp=null;
+		DBUtils hp=null;
 		try{
 		String sql="select power from User where  name=? and pwd=?";
 		String []params={uid,p};
-		hp=new MySqlHelper();
+		hp=new DBUtils();
 		ResultSet rs=hp.queryExecute(sql, params);
 		if(rs.next())
 		{
