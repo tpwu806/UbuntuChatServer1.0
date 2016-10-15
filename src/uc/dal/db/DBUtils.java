@@ -12,7 +12,7 @@ public class DBUtils {
 	ResultSet rs=null;
 	
 	String driver = "com.mysql.jdbc.Driver";
-	String url = "jdbc:mysql://192.168.0.121:3306/chat";
+	String url = "jdbc:mysql://192.168.0.111:3306/chat";
 	String user = "root";
 	String pwd = "123456";
 	int sum=0;

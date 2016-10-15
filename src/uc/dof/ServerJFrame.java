@@ -5,7 +5,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import uc.dal.UbuntuChatServer;
+import uc.dal.ServerServer;
 import uc.dal.db.TableModel;
 
 import java.awt.*;
@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * @Description: 后台管理
+ * @Description: 后台管理界面
  * @author wutp 2016年10月13日
  * @version 1.0
  */
@@ -37,11 +37,11 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 	private Timer t;
 	private JLabel showTime, jl1, jl2, jl3;
 	
-	public JList<String> userList;
-	public DefaultListModel<String> listModel;
-	public JTextArea contentArea;
+	private JList<String> userList;
+	private DefaultListModel<String> listModel;
+	private JTextArea contentArea;
 
-	private UbuntuChatServer ubuntuchatServer;
+	private ServerServer ubuntuchatServer;
 	private TableModel tm = null;
 
 	public ServerJFrame() {
@@ -154,11 +154,16 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 	 * @return void
 	 */
 	private void startServer(){
-		ubuntuchatServer = new UbuntuChatServer(this);
-		ubuntuchatServer.startServer();
+		ubuntuchatServer = new ServerServer(this);
+		Thread t =new Thread(ubuntuchatServer);
+		t.start();
 	}
 
-	// 关闭服务器
+	/**
+	 * @Description:关闭服务器
+	 * @auther: wutp 2016年10月15日
+	 * @return void
+	 */
 	private void stopServer() {
 		//sts.stop();
 		ubuntuchatServer.closeServer();
@@ -301,7 +306,6 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
-		// TODO Auto-generated method stub
 		// if(getValueIsAdjusting()=ture)
 		String id = (String) ((JList<?>) e.getSource()).getSelectedValue();
 		// String id=obj.toString();
@@ -312,7 +316,8 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 	}
 
 	public static void main(String[] args) {
-		new ServerJFrame();
+		ServerJFrame sjf = new ServerJFrame();
+		sjf.setEnabled(true);
 	}
 
 }
