@@ -40,7 +40,8 @@ public class ServerServer implements Runnable{
 		this.AppWindow = AppWindow;
 	}
 
-	/*// 返回当前在线的人的线程
+	// 返回当前在线的人的线程
+	@Deprecated
 	private static String getAllOnLineUserid() {
 		// 使用迭代器完成
 		Iterator<String> it = signinThreads.keySet().iterator();
@@ -49,7 +50,7 @@ public class ServerServer implements Runnable{
 			res += it.next().toString() + " ";
 		}
 		return res;
-	}*/
+	}
 
 	/**
 	 * @Description:服务器关闭监听
@@ -68,7 +69,7 @@ public class ServerServer implements Runnable{
 	 */
 	public void broadcast(String str) {
 		MessageBean serverBean = new MessageBean();
-		serverBean.setType(MessageType.SERVER_NOTICE);
+		serverBean.setType(MessageType.SERVER_BROADCAST);
 		serverBean.setInfo(str);		
 		
 		Collection<ClientThread> clients = ServerServer.signinThreads.values();
@@ -110,9 +111,5 @@ public class ServerServer implements Runnable{
 		}
 		
 	}
-
-	
-
-	
 
 }

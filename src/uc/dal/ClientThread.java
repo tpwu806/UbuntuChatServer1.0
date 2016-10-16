@@ -26,10 +26,12 @@ public class ClientThread implements Runnable {
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
 	private ServerJFrame AppWindow;
+	private UserService userService ; 
 
 	public ClientThread(Socket socket, ServerJFrame AppWindow) {
 		this.clientsocket = socket;
 		this.AppWindow = AppWindow;
+		userService = new UserService();
 	}
 
 	volatile boolean running = true;
@@ -38,21 +40,21 @@ public class ClientThread implements Runnable {
 	public void run() {
 		try {
 			MessageBean mbean;
-			while (running) {				
+			while (running) {
 				ois = new ObjectInputStream(clientsocket.getInputStream());								
 				bean = (MessageBean) ois.readObject();
 
 				// 分析catbean中，type是那样一种类型
 				switch (bean.getType()) {
 				// 登录
-				case MessageType.CLIENT_SIGN_IN: {
+				case MessageType.SIGN_IN: {
 					System.out.println(bean.getType() + ":" + bean.getName() + bean.getPwd());
 					mbean = new MessageBean();
-					UserService user = new UserService();
-					String power = new String(user.checkUser(bean.getName().trim(), bean.getPwd()).trim());
+					
+					String power = new String(userService.checkUser(bean.getName().trim(), bean.getPwd()).trim());
 					if (power.equals("root") || power.equals("user")) {
 						System.out.println("sql验证成功");
-						mbean.setType(MessageType.SERVER_SIGN_IN_SUCCESS);
+						mbean.setType(MessageType.SIGN_IN_SUCCESS);
 						oos = new ObjectOutputStream(clientsocket.getOutputStream());
 						oos.writeObject(mbean);
 						oos.flush();
@@ -70,7 +72,7 @@ public class ClientThread implements Runnable {
 
 					} else {
 						bean = new MessageBean();
-						bean.setType(MessageType.SERVER_SIGN_IN_FALSE);
+						bean.setType(MessageType.SIGN_IN_FALSE);
 						oos = new ObjectOutputStream(clientsocket.getOutputStream());
 						oos.writeObject(mbean);
 						oos.flush();
@@ -80,7 +82,7 @@ public class ClientThread implements Runnable {
 					break;
 				}
 				// 注册
-				case MessageType.CLIENT_SIGN_UP: {
+				case MessageType.SIGN_UP: {
 					mbean = new MessageBean();
 					System.out.println(bean.getType() + bean.getName() + bean.getPwd());
 					String sql = "insert into User values(?,?,?)";
@@ -92,14 +94,14 @@ public class ClientThread implements Runnable {
 					TableModel tm = new TableModel();
 
 					if (!tm.UpdateModel(sql, params)) {
-						mbean.setType(MessageType.SERVER_SIGN_UP_SUCCESS);
+						mbean.setType(MessageType.SIGN_UP_SUCCESS);
 						oos = new ObjectOutputStream(clientsocket.getOutputStream());
 						oos.writeObject(mbean);
 						oos.flush();
 
 						System.out.println("sql注册成功");
 					} else {
-						mbean.setType(MessageType.SERVER_SIGN_UP_FALSE);
+						mbean.setType(MessageType.SIGN_UP_FALSE);
 						oos = new ObjectOutputStream(clientsocket.getOutputStream());
 						oos.writeObject(mbean);
 						oos.flush();
@@ -108,33 +110,21 @@ public class ClientThread implements Runnable {
 					break;
 				}
 
-				case MessageType.CLIENT_SIGN_OUT: { // 下线															
+				case MessageType.SIGN_OUT: { // 下线															
 					// 告诉其他人我下线了
 					MessageBean serverBean = new MessageBean();
-					serverBean.setType(MessageType.SERVER_SIGN_IN_NOTICE);
+					serverBean.setType(MessageType.SERVER_BROADCAST);
 					serverBean.setName(bean.getName());
 					serverBean.setInfo(bean.getTimer() + "  " + bean.getName() + "下线了");
-					sendOtherAll(serverBean);
+					//sendOtherAll(serverBean);
 					AppWindow.delList(bean.getName());
 					
 					ServerServer.signinThreads.remove(bean.getName());
 					closeSockt();
 					this.running=false;
 					//return;
-				}
-				/*case MessageType.CLIENT_CHAR: { // 聊天
-
-					// 告诉其他人我上线了
-					MessageBean serverBean = new MessageBean();
-					serverBean.setType(MessageType.SERVER_SIGN_IN_NOTICE);
-					serverBean.setName(bean.getName());
-					serverBean.setInfo(bean.getTimer() + "  " + bean.getName() + "上线了");
-
-					sendOtherAll(serverBean);
-					updateFriendsList(bean.getName());
-				}*/
+				}				
 				case MessageType.CLIENT_CHAR: { // 聊天
-					System.out.println("JJJJJJJJJJJJJJJ");
 					// 创建服务器的catbean，并发送给客户端
 					MessageBean serverBean = new MessageBean();
 					serverBean.setType(MessageType.CLIENT_CHAR);
@@ -146,12 +136,12 @@ public class ClientThread implements Runnable {
 					sendMessage(serverBean);
 					break;
 				}
-				case 2: { // 请求接受文件
+				case MessageType.FILE_REQUESTION: { // 请求接受文件
 					// 创建服务器的catbean，并发送给客户端
 					MessageBean serverBean = new MessageBean();
 					String info = bean.getTimer() + "  " + bean.getName() + "向你传送文件,是否需要接受";
 
-					serverBean.setType(2);
+					serverBean.setType(MessageType.FILE_REQUESTION);
 					serverBean.setClients(bean.getClients()); // 这是发送的目的地
 					serverBean.setFileName(bean.getFileName()); // 文件名称
 					serverBean.setSize(bean.getSize()); // 文件大小
@@ -163,10 +153,10 @@ public class ClientThread implements Runnable {
 
 					break;
 				}
-				case 3: { // 确定接收文件
+				case MessageType.FILE_RECEIVE: { // 确定接收文件
 					MessageBean serverBean = new MessageBean();
 
-					serverBean.setType(3);
+					serverBean.setType(MessageType.FILE_RECEIVE);
 					serverBean.setClients(bean.getClients()); // 文件来源
 					serverBean.setTo(bean.getTo()); // 文件目的地
 					serverBean.setFileName(bean.getFileName()); // 文件名称
@@ -178,10 +168,10 @@ public class ClientThread implements Runnable {
 					sendMessage(serverBean);
 					break;
 				}
-				case 4: {
+				case MessageType.FILE_RECEIVE_OK: {
 					MessageBean serverBean = new MessageBean();
 
-					serverBean.setType(4);
+					serverBean.setType(MessageType.FILE_RECEIVE_OK);
 					serverBean.setClients(bean.getClients()); // 文件来源\
 					serverBean.setTo(bean.getTo()); // 文件目的地
 					serverBean.setFileName(bean.getFileName());
@@ -190,6 +180,10 @@ public class ClientThread implements Runnable {
 					serverBean.setTimer(bean.getTimer());
 					sendMessage(serverBean);
 
+					break;
+				}
+				case MessageType.SINGLETON_CHAR: { 					
+					sendSingleton(bean);					
 					break;
 				}
 				default: {
@@ -213,10 +207,8 @@ public class ClientThread implements Runnable {
 	 */
 	private void updateFriendsList(String name){
 		//首先取得所有的在线用户
-		HashSet<String> hs = new HashSet<>();
-		
+		HashSet<String> hs = new HashSet<>();		
 		hs.addAll(ServerServer.signinThreads.keySet());
-		System.out.println("%%%%%%%%%%%%%%"+hs.size()+hs.toString());
 		MessageBean serverBean = new MessageBean();
 		serverBean.setType(MessageType.SERVER_UPDATE_FRIENDS);
 		serverBean.setClients(hs);
@@ -255,6 +247,37 @@ public class ClientThread implements Runnable {
 			}
 		}
 	}
+	
+	/**
+	 * @Description:一对一聊天
+	 * @auther: wutp 2016年10月16日
+	 * @param serverBean
+	 * @return void
+	 */
+	private void sendSingleton(MessageBean bean){
+		ObjectOutputStream oos;
+		MessageBean serverBean;
+		try {		
+		Set<String> onlines = ServerServer.signinThreads.keySet();
+		if(onlines.contains(bean.getFriendName())){
+			Socket c = ServerServer.signinThreads.get(bean.getFriendName()).clientsocket;	
+			
+			serverBean = new MessageBean();
+			serverBean.setType(MessageType.SINGLETON_CHAR);
+			serverBean.setName(bean.getName());
+			serverBean.setFriendName(bean.getFriendName());
+			serverBean.setTimer(bean.getTimer());
+			serverBean.setInfo(bean.getInfo());
+			
+			oos = new ObjectOutputStream(c.getOutputStream());
+			oos.writeObject(serverBean);
+			oos.flush();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
 
 	/**
 	 * @Description:向所有的用户发送信息
@@ -262,26 +285,30 @@ public class ClientThread implements Runnable {
 	 * @param serverBean
 	 * @return void
 	 */
+	@Deprecated
 	private void sendOtherAll(MessageBean serverBean) {
 		//首先取得所有的在线用户
 		Set<String> signins = ServerServer.signinThreads.keySet();
 		signins.remove(serverBean.getName());
-		Iterator<String> it = signins.iterator();
+		if(!signins.isEmpty()){
+			Iterator<String> it = signins.iterator();
 
-		while (it.hasNext()) {
-			// 选中客户
-			String onlineClientName = it.next();
+			while (it.hasNext()) {
+				// 选中客户
+				String onlineClientName = it.next();
 
-			Socket c = ServerServer.signinThreads.get(onlineClientName).clientsocket;
-			ObjectOutputStream oos;
-			try {
-				oos = new ObjectOutputStream(c.getOutputStream());
-				oos.writeObject(serverBean);
-				oos.flush();
-			} catch (IOException e) {
-				e.printStackTrace();
+				Socket c = ServerServer.signinThreads.get(onlineClientName).clientsocket;
+				ObjectOutputStream oos;
+				try {
+					oos = new ObjectOutputStream(c.getOutputStream());
+					oos.writeObject(serverBean);
+					oos.flush();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
+		
 	}
 	
 	/**
