@@ -8,8 +8,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import uc.dal.db.TableModel;
-import uc.dal.db.UserService;
+import uc.dal.sevice.TableModel;
+import uc.dal.sevice.UserService;
 import uc.dof.ServerJFrame;
 import uc.pub.common.MessageBean;
 import uc.pub.common.MessageType;
@@ -51,8 +51,7 @@ public class ClientThread implements Runnable {
 					System.out.println(bean.getType() + ":" + bean.getName() + bean.getPwd());
 					mbean = new MessageBean();
 					
-					String power = new String(userService.checkUser(bean.getName().trim(), bean.getPwd()).trim());
-					if (power.equals("root") || power.equals("user")) {
+					if (userService.checkUser(bean.getName().trim(), bean.getPwd().trim())) {
 						System.out.println("sql验证成功");
 						mbean.setType(MessageType.SIGN_IN_SUCCESS);
 						oos = new ObjectOutputStream(clientsocket.getOutputStream());

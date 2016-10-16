@@ -4,8 +4,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.util.Vector;
 
-public class DBUtils {
+public class DbHelper {
 	//定义需要的对象
 	Connection con=null;
 	PreparedStatement ps=null;
@@ -17,7 +19,7 @@ public class DBUtils {
 	String pwd = "123456";
 	int sum=0;
 	//构造函数，初始化ct
-	public DBUtils()
+	public DbHelper()
 	{
 		try {
 			//加载驱动
@@ -44,7 +46,6 @@ public class DBUtils {
 			rs=ps.executeQuery();
 		} catch (Exception e) {
 			e.printStackTrace();
-			// TODO: handle exception
 		}
 		//返回结果集
 		return rs;
@@ -96,6 +97,55 @@ public class DBUtils {
 		return b;
 		
 	}
+	
+	/**
+	 * @Description: 显示表
+	 * @auther: wutp 2016年10月16日
+	 * @param sql
+	 * @param params
+	 * @return
+	 * @return Vector[]
+	 */
+	public Vector[] query(String sql, String[] params) {
+		// 初始化
+		Vector[] data = new Vector[2];
+		Vector<String> colums = new Vector<String>();
+		Vector<Vector> rows = new Vector<Vector>();
+		//Vector[2] = new Vector[2];
+		// this.colums.add("员工号");
+		// this.colums.add("姓名");
+		// this.colums.add("性别");
+		// this.colums.add("职位");
+		DbHelper hp = new DbHelper();
+		ResultSet rs = hp.queryExecute(sql, params);
+		try {
+			ResultSetMetaData rsmd = rs.getMetaData();
+			for (int i = 0; i < rsmd.getColumnCount(); i++) {
+				colums.add(rsmd.getColumnName(i + 1));
+			}
+			while (rs.next()) {
+				Vector<String> temp = new Vector<String>();
+				for (int i = 0; i < rsmd.getColumnCount(); i++) {
+					temp.add(rs.getString(i + 1));
+				}
+				rows.add(temp);
+				// temp.add(rs.getString(1));
+				// temp.add(rs.getString(2));
+				// temp.add(rs.getString(3));
+				// temp.add(rs.getString(4));
+			}
+			data[0]=colums;
+			data[1]=rows;
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			hp.close();
+		}
+		
+		
+		return data;
+	}
+	
 	//关闭资源的方法
 	public void close()
 	{

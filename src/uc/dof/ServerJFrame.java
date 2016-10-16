@@ -6,7 +6,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import uc.dal.ServerServer;
-import uc.dal.db.TableModel;
+import uc.dal.sevice.TableModel;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -117,7 +117,7 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 		jp2.add(jb3);
 
 		String[] params = { "1" };
-		String sql = "select * from User where 1=?";
+		String sql = "select * from USERINFO where 1=?";
 		tm = new TableModel();
 		tm.query(sql, params);
 		jtable = new JTable(tm);
@@ -210,9 +210,13 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 		this.contentArea.append(res + "下线了" + "\r\n");
 	}
 	
-	@Override
-	public void actionPerformed(ActionEvent arg0) {
-
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年10月16日
+	 * @param arg0
+	 * @return void
+	 */
+	private void ActionactionPerformed(ActionEvent arg0){
 		Date date=new Date();
 		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String time=format.format(date);
@@ -246,7 +250,7 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 				new AddSmJDialog(this, "添加", true);
 			}
 			String[] params = { "1" };
-			String sql = "select * from User where 1=?";
+			String sql = "select * from USERINFO where 1=?";
 			tm = new TableModel();
 			tm.query(sql, params);
 			jtable.setModel(tm);
@@ -258,7 +262,7 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 				JOptionPane.showMessageDialog(this, "请选择一行！");
 			} else {
 				String name = (String) this.jtable.getValueAt(rowNum, 0);
-				String sql = "delete from User where name=?";
+				String sql = "delete from USERINFO where name=?";
 				String[] params = { name };
 				tm = new TableModel();
 				;
@@ -266,7 +270,7 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 				JOptionPane.showMessageDialog(null, "恭喜！删除成功！");
 			}
 			String[] params = { "1" };
-			String sql = "su\\elect * from User where 1=?";
+			String sql = "select * from USERINFO where 1=?";
 			tm = new TableModel();
 			tm.query(sql, params);
 			jtable.setModel(tm);
@@ -278,20 +282,20 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 				new UpSmJDialog(this, "修改", true, tm, rowNum);
 			}
 			String[] params = { "1" };
-			String sql = "select * from User where 1=?";
+			String sql = "select * from USERINFO where 1=?";
 			tm = new TableModel();
 			tm.query(sql, params);
 			jtable.setModel(tm);
 		} else if (arg0.getSource().equals(jb6)) { // 查询
 			if (jtf.getText().trim().equals("")) {
 				String[] params = { "1" };
-				String sql = "select * from User where 1=?";
+				String sql = "select * from USERINFO where 1=?";
 				tm = new TableModel();
 				tm.query(sql, params);
 				jtable.setModel(tm);
 			} else {
 				String params[] = { jtf.getText().trim() };
-				String sql = "select * from User where name=?";
+				String sql = "select * from USERINFO where name=?";
 				tm = new TableModel();
 				tm.query(sql, params);
 				jtable.setModel(tm);
@@ -302,6 +306,11 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 			broadcast(str);
 			contentArea.append(str + "\r\n");
 		}
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		ActionactionPerformed(arg0);		
 	}
 
 	@Override
