@@ -11,7 +11,7 @@ public class UserService {
 		int power = 0;
 		DbHelper hp = null;
 		try {
-			String sql = "select 1 from User where  nickname=? and pwd=?";
+			String sql = "select 1 from USERINFO where  nickname=? and pwd=?";
 			String[] params = { uid, p };
 			hp = new DbHelper();
 			ResultSet rs = hp.queryExecute(sql, params);
