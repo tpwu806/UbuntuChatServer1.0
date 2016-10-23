@@ -15,8 +15,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * @Description: ºóÌ¨¹ÜÀí½çÃæ
- * @author wutp 2016Äê10ÔÂ13ÈÕ
+ * @Description: åå°ç®¡ç†ç•Œé¢
+ * @author wutp 2016å¹´10æœˆ13æ—¥
  * @version 1.0
  */
 public class ServerJFrame extends JFrame implements ActionListener, ListSelectionListener {
@@ -25,7 +25,7 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	// ±±²¿Ö÷¼ş
+	// åŒ—éƒ¨ä¸»ä»¶
 	private JPanel jp1, jp2, jp3, jp4, jp5, jp6;
 	private JTabbedPane jtp;
 	private JScrollPane jsp, rightPanel, leftPanel;
@@ -49,17 +49,17 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 	}
 
 	private void init() {
-		// ÉÏ±ß
+		// ä¸Šè¾¹
 		jp1 = new JPanel(new GridLayout(1, 10));
 		// jp1=new JPanel(new FlowLayout(FlowLayout.LEFT));
-		jp1.setBorder(new TitledBorder("ÅäÖÃĞÅÏ¢"));
-		jl2 = new JLabel("ÈËÊıÉÏÏß:");
+		jp1.setBorder(new TitledBorder("é…ç½®ä¿¡æ¯"));
+		jl2 = new JLabel("äººæ•°ä¸Šçº¿:");
 		jtf_max = new JTextField("30");
-		jl3 = new JLabel("¶Ë¿Ú:");
+		jl3 = new JLabel("ç«¯å£:");
 		jtf_port = new JTextField("8520");
-		jb1 = new JButton("¿ªÆô");
+		jb1 = new JButton("å¼€å¯");
 		jb1.addActionListener(this);
-		jb2 = new JButton("¹Ø±Õ");
+		jb2 = new JButton("å…³é—­");
 		jb2.setEnabled(false);
 		jb2.addActionListener(this);
 
@@ -70,21 +70,21 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 		jp1.add(jb1);
 		jp1.add(jb2);
 
-		// ÖĞ¼ä
+		// ä¸­é—´
 		listModel = new DefaultListModel<String>();
 		userList = new JList<String>(listModel);
 		userList.addListSelectionListener(this);
 		// listModel.addMouseListener(this);
 		leftPanel = new JScrollPane(userList);
-		leftPanel.setBorder(new TitledBorder("ÔÚÏßÓÃ»§"));
+		leftPanel.setBorder(new TitledBorder("åœ¨çº¿ç”¨æˆ·"));
 		contentArea = new JTextArea();
 		contentArea.setEditable(false);
 		contentArea.setLineWrap(true);
 		contentArea.setForeground(Color.blue);
 		jp4 = new JPanel(new BorderLayout());
-		jp4.setBorder(new TitledBorder("Ğ´ÏûÏ¢"));
+		jp4.setBorder(new TitledBorder("å†™æ¶ˆæ¯"));
 		jtf_message = new JTextField();
-		btn_send = new JButton("·¢ËÍ");
+		btn_send = new JButton("å‘é€");
 		btn_send.addActionListener(this);
 		jp4.add(jtf_message, "Center");
 		jp4.add(btn_send, "East");
@@ -92,22 +92,22 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 		jp6.add(contentArea, "Center");
 		jp6.add(jp4, "South");
 		rightPanel = new JScrollPane(jp6);
-		rightPanel.setBorder(new TitledBorder("ÏµÍ³ÈÕÖ¾"));
+		rightPanel.setBorder(new TitledBorder("ç³»ç»Ÿæ—¥å¿—"));
 		centerSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
 		centerSplit.setDividerLocation(100);
 
-		// µÚ¶ş¸öÑ¡Ïî¿¨
+		// ç¬¬äºŒä¸ªé€‰é¡¹å¡
 		jp2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		jp2.setBorder(new TitledBorder("²Ù×÷Çø"));
-		jl1 = new JLabel("ÇëÊäÈëÓÃ»§Ãû£º");
+		jp2.setBorder(new TitledBorder("æ“ä½œåŒº"));
+		jl1 = new JLabel("è¯·è¾“å…¥ç”¨æˆ·åï¼š");
 		jtf = new JTextField(10);
-		jb3 = new JButton("Ìí¼Ó");
+		jb3 = new JButton("æ·»åŠ ");
 		jb3.addActionListener(this);
-		jb4 = new JButton("É¾³ı");
+		jb4 = new JButton("åˆ é™¤");
 		jb4.addActionListener(this);
-		jb5 = new JButton("ĞŞ¸Ä");
+		jb5 = new JButton("ä¿®æ”¹");
 		jb5.addActionListener(this);
-		jb6 = new JButton("²éÑ¯");
+		jb6 = new JButton("æŸ¥è¯¢");
 		jb6.addActionListener(this);
 		jp2.add(jl1);
 		jp2.add(jtf);
@@ -126,10 +126,10 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 		jp3.add(jp2, BorderLayout.NORTH);
 		jp3.add(jsp, BorderLayout.CENTER);
 		jtp = new JTabbedPane();
-		jtp.add("×¢²áÓÃ»§", jp3);
-		jtp.add("ÔÚÏßÓÃ»§", centerSplit);
+		jtp.add("æ³¨å†Œç”¨æˆ·", jp3);
+		jtp.add("åœ¨çº¿ç”¨æˆ·", centerSplit);
 
-		// ÏÂ±ß
+		// ä¸‹è¾¹
 		jp5 = new JPanel(new BorderLayout());
 		t = new Timer(1000, this);
 		showTime = new JLabel();
@@ -150,7 +150,7 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 
 	/**
 	 * @Description:
-	 * @auther: wutp 2016Äê10ÔÂ13ÈÕ
+	 * @auther: wutp 2016å¹´10æœˆ13æ—¥
 	 * @return void
 	 */
 	private void startServer(){
@@ -160,8 +160,8 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 	}
 
 	/**
-	 * @Description:¹Ø±Õ·şÎñÆ÷
-	 * @auther: wutp 2016Äê10ÔÂ15ÈÕ
+	 * @Description:å…³é—­æœåŠ¡å™¨
+	 * @auther: wutp 2016å¹´10æœˆ15æ—¥
 	 * @return void
 	 */
 	private void stopServer() {
@@ -169,14 +169,14 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 		ubuntuchatServer.closeServer();
 	}
 
-	//¹ã²¥
+	//å¹¿æ’­
 	private void broadcast(String str) {
 		this.ubuntuchatServer.broadcast(str);
 	}
 
 	/**
-	 * @Description:Ç¿ÖÆÏÂÏß
-	 * @auther: wutp 2016Äê10ÔÂ13ÈÕ
+	 * @Description:å¼ºåˆ¶ä¸‹çº¿
+	 * @auther: wutp 2016å¹´10æœˆ13æ—¥
 	 * @param id
 	 * @return void
 	 */
@@ -184,7 +184,7 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 		this.ubuntuchatServer.kickAway(id);
 	}
 	
-	// Ìí¼ÓÉÏÏßÓÃ»§
+	// æ·»åŠ ä¸Šçº¿ç”¨æˆ·
 	public void AddList(String res) {
 		// onlines=(HashMap<String, ClientBean>)ubuntuchatServer.getOnlines();
 		// Iterator it=onlines.keySet().iterator();
@@ -198,21 +198,21 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 		// this.listModel.removeAllElements();
 		this.listModel.addElement(res);
 		this.userList.setModel(this.listModel);
-		this.contentArea.append(res + "ÉÏÏßÁË" + "\r\n");
+		this.contentArea.append(res + "ä¸Šçº¿äº†" + "\r\n");
 
 		// this.listModel.addListDataListener(res);
 	}
 
-	// È¥µôÏÂÏßÓÃ»§
+	// å»æ‰ä¸‹çº¿ç”¨æˆ·
 	public void delList(String res) {
 		this.listModel.removeElement(res);
 		this.userList.setModel(this.listModel);
-		this.contentArea.append(res + "ÏÂÏßÁË" + "\r\n");
+		this.contentArea.append(res + "ä¸‹çº¿äº†" + "\r\n");
 	}
 	
 	/**
 	 * @Description:
-	 * @auther: wutp 2016Äê10ÔÂ16ÈÕ
+	 * @auther: wutp 2016å¹´10æœˆ16æ—¥
 	 * @param arg0
 	 * @return void
 	 */
@@ -220,34 +220,34 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 		Date date=new Date();
 		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String time=format.format(date);
-		//Calendar.getInstance().getTime().toLocaleString()//¹ıÆÚ
-		this.showTime.setText("µ±Ç°Ê±¼ä£º" + time + "   ");
+		//Calendar.getInstance().getTime().toLocaleString()//è¿‡æœŸ
+		this.showTime.setText("å½“å‰æ—¶é—´ï¼š" + time + "   ");
 		// UPList();
-		if (arg0.getSource() == jb1) { // ¿ªÆô·şÎñÆ÷
-			contentArea.append("·şÎñÆ÷£º·şÎñÆ÷ÒÑ¿ªÆğ" + "\r\n");
-			System.out.println("¿ªÆô");
+		if (arg0.getSource() == jb1) { // å¼€å¯æœåŠ¡å™¨
+			contentArea.append("æœåŠ¡å™¨ï¼šæœåŠ¡å™¨å·²å¼€èµ·" + "\r\n");
+			System.out.println("å¼€å¯");
 
 			//sts = new ServerThreadStart(this);
 			//sts.start();
-			//¿ªÆô·şÎñÆ÷
+			//å¼€å¯æœåŠ¡å™¨
 			startServer();
 			jb1.setEnabled(false);
 			jtf_max.setEnabled(false);
 			jtf_port.setEnabled(false);
 			jb2.setEnabled(true);
-		} else if (arg0.getSource() == jb2) { // ¹Ø±Õ·şÎñÆ÷
+		} else if (arg0.getSource() == jb2) { // å…³é—­æœåŠ¡å™¨
 
-			contentArea.setText("·şÎñÆ÷£º·şÎñÆ÷ÒÑ¹Ø±Õ" + "\r\n");
-			System.out.println("¹Ø±Õ");
+			contentArea.setText("æœåŠ¡å™¨ï¼šæœåŠ¡å™¨å·²å…³é—­" + "\r\n");
+			System.out.println("å…³é—­");
 			jb2.setEnabled(false);
 			jb1.setEnabled(true);
 			jtf_max.setEnabled(true);
 			jtf_port.setEnabled(true);
 
 			stopServer();
-		} else if (arg0.getSource() == jb3) { // Ìí¼Ó
+		} else if (arg0.getSource() == jb3) { // æ·»åŠ 
 			if (true) {
-				new AddSmJDialog(this, "Ìí¼Ó", true);
+				new AddSmJDialog(this, "æ·»åŠ ", true);
 			}
 			String[] params = { "1" };
 			String sql = "select * from USERINFO where 1=?";
@@ -255,11 +255,11 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 			tm.query(sql, params);
 			jtable.setModel(tm);
 
-		} else if (arg0.getSource().equals(jb4)) { // É¾³ı
+		} else if (arg0.getSource().equals(jb4)) { // åˆ é™¤
 			int rowNum = this.jtable.getSelectedRow();
 
 			if (rowNum == -1) {
-				JOptionPane.showMessageDialog(this, "ÇëÑ¡ÔñÒ»ĞĞ£¡");
+				JOptionPane.showMessageDialog(this, "è¯·é€‰æ‹©ä¸€è¡Œï¼");
 			} else {
 				String name = (String) this.jtable.getValueAt(rowNum, 0);
 				String sql = "delete from USERINFO where name=?";
@@ -267,26 +267,26 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 				tm = new TableModel();
 				;
 				tm.UpdateModel(sql, params);
-				JOptionPane.showMessageDialog(null, "¹§Ï²£¡É¾³ı³É¹¦£¡");
+				JOptionPane.showMessageDialog(null, "æ­å–œï¼åˆ é™¤æˆåŠŸï¼");
 			}
 			String[] params = { "1" };
 			String sql = "select * from USERINFO where 1=?";
 			tm = new TableModel();
 			tm.query(sql, params);
 			jtable.setModel(tm);
-		} else if (arg0.getSource() == jb5) { // ĞŞ¸Ä
+		} else if (arg0.getSource() == jb5) { // ä¿®æ”¹
 			int rowNum = this.jtable.getSelectedRow();
 			if (rowNum == -1) {
-				JOptionPane.showMessageDialog(this, "ÇëÑ¡ÔñÒ»ĞĞ£¡");
+				JOptionPane.showMessageDialog(this, "è¯·é€‰æ‹©ä¸€è¡Œï¼");
 			} else {
-				new UpSmJDialog(this, "ĞŞ¸Ä", true, tm, rowNum);
+				new UpSmJDialog(this, "ä¿®æ”¹", true, tm, rowNum);
 			}
 			String[] params = { "1" };
 			String sql = "select * from USERINFO where 1=?";
 			tm = new TableModel();
 			tm.query(sql, params);
 			jtable.setModel(tm);
-		} else if (arg0.getSource().equals(jb6)) { // ²éÑ¯
+		} else if (arg0.getSource().equals(jb6)) { // æŸ¥è¯¢
 			if (jtf.getText().trim().equals("")) {
 				String[] params = { "1" };
 				String sql = "select * from USERINFO where 1=?";
@@ -295,14 +295,14 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 				jtable.setModel(tm);
 			} else {
 				String params[] = { jtf.getText().trim() };
-				String sql = "select * from USERINFO where name=?";
+				String sql = "select * from USERINFO where nickname=?";
 				tm = new TableModel();
 				tm.query(sql, params);
 				jtable.setModel(tm);
 			}
 		} else if (arg0.getSource().equals(btn_send)) {
 
-			String str = ("·şÎñÆ÷£º" + jtf_message.getText().trim());
+			String str = ("æœåŠ¡å™¨ï¼š" + jtf_message.getText().trim());
 			broadcast(str);
 			contentArea.append(str + "\r\n");
 		}
@@ -318,8 +318,8 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 		// if(getValueIsAdjusting()=ture)
 		String id = (String) ((JList<?>) e.getSource()).getSelectedValue();
 		// String id=obj.toString();
-		contentArea.append("ÄãÑ¡µÄÊÇ" + id + "\r\n");
-		System.out.println("ÄãÑ¡µÄÊÇ" + id + "\r\n");
+		contentArea.append("ä½ é€‰çš„æ˜¯" + id + "\r\n");
+		System.out.println("ä½ é€‰çš„æ˜¯" + id + "\r\n");
 		kickAway(id);
 
 	}

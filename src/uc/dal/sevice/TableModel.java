@@ -1,16 +1,19 @@
 package uc.dal.sevice;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.Vector;
 
 import javax.swing.table.AbstractTableModel;
 
-import uc.dal.db.DbHelper;
+import uc.dal.db.ConnectionUtil;
+import uc.dal.db.DbUtils;
 
 /**
  * @Description: 
- * @author wutp 2016Äê10ÔÂ16ÈÕ
+ * @author wutp 2016å¹´10æœˆ16æ—¥
  * @version 1.0
  */
 public class TableModel extends AbstractTableModel {
@@ -22,29 +25,43 @@ public class TableModel extends AbstractTableModel {
 	public Vector<Vector> rows;
 
 	public boolean UpdateModel(String sql, String[] params) {
-		DbHelper hp = new DbHelper();
-		return hp.updateExecete(sql, params);
+		boolean result = false;
+		Connection con = ConnectionUtil.getConnection();
+		try {
+			result = DbUtils.executeQuery(con,sql, params);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 	public int getNum(String sql) {
-		DbHelper hp = new DbHelper();
-		int sum = hp.queryExecute(sql);
+		int sum = 0;
+		String params[] = {"1"}; 
+		sql += "and 1 = ? ";
+		Connection con = ConnectionUtil.getConnection();
+		try {
+			sum = DbUtils.getExecuteCount(con,sql,params);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		return sum;
 	}
 
-	// ÏÔÊ¾±í
+	// æ˜¾ç¤ºè¡¨
 	public void query(String sql, String[] params) {
-		// ³õÊ¼»¯
+		// åˆå§‹åŒ–
 
 		colums = new Vector<String>();
 		rows = new Vector<Vector>();
-		// this.colums.add("Ô±¹¤ºÅ");
-		// this.colums.add("ĞÕÃû");
-		// this.colums.add("ĞÔ±ğ");
-		// this.colums.add("Ö°Î»");
-		DbHelper hp = new DbHelper();
-		ResultSet rs = hp.queryExecute(sql, params);
+		// this.colums.add("å‘˜å·¥å·");
+		// this.colums.add("å§“å");
+		// this.colums.add("æ€§åˆ«");
+		// this.colums.add("èŒä½");
+		Connection con = ConnectionUtil.getConnection();
+		ResultSet rs = null;
 		try {
+			rs = DbUtils.getResultSet2(con,sql, params);
 			ResultSetMetaData rsmd = rs.getMetaData();
 			for (int i = 0; i < rsmd.getColumnCount(); i++) {
 				this.colums.add(rsmd.getColumnName(i + 1));
@@ -63,7 +80,11 @@ public class TableModel extends AbstractTableModel {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			hp.close();
+			try {
+				ConnectionUtil.BackPreparedStatement(con,null, rs);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

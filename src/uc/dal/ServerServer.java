@@ -13,8 +13,8 @@ import uc.pub.common.MessageBean;
 import uc.pub.common.MessageType;
 
 /**
- * @Description: ·şÎñÆ÷ºóÌ¨
- * @author wutp 2016Äê10ÔÂ13ÈÕ
+ * @Description: æœåŠ¡å™¨åå°
+ * @author wutp 2016å¹´10æœˆ13æ—¥
  * @version 1.0
  */
 public class ServerServer implements Runnable{
@@ -22,7 +22,7 @@ public class ServerServer implements Runnable{
 	private static ServerSocket ss;	
 	private Socket socket;
 	private ServerJFrame AppWindow;
-	public static ConcurrentHashMap<String, ClientThread> signinThreads;// µÇÂ¼¿Í»§¼¯ºÏ
+	public static ConcurrentHashMap<String, ClientThread> signinThreads;// ç™»å½•å®¢æˆ·é›†åˆ
 	private ClientThread clientThread;
 	
 	volatile boolean running = true;
@@ -40,10 +40,10 @@ public class ServerServer implements Runnable{
 		this.AppWindow = AppWindow;
 	}
 
-	// ·µ»Øµ±Ç°ÔÚÏßµÄÈËµÄÏß³Ì
+	// è¿”å›å½“å‰åœ¨çº¿çš„äººçš„çº¿ç¨‹
 	@Deprecated
 	private static String getAllOnLineUserid() {
-		// Ê¹ÓÃµü´úÆ÷Íê³É
+		// ä½¿ç”¨è¿­ä»£å™¨å®Œæˆ
 		Iterator<String> it = signinThreads.keySet().iterator();
 		String res = "";
 		while (it.hasNext()) {
@@ -53,8 +53,8 @@ public class ServerServer implements Runnable{
 	}
 
 	/**
-	 * @Description:·şÎñÆ÷¹Ø±Õ¼àÌı
-	 * @auther: wutp 2016Äê10ÔÂ15ÈÕ
+	 * @Description:æœåŠ¡å™¨å…³é—­ç›‘å¬
+	 * @auther: wutp 2016å¹´10æœˆ15æ—¥
 	 * @return void
 	 */
 	public void closeServer() {
@@ -62,8 +62,8 @@ public class ServerServer implements Runnable{
 	}
 
 	/**
-	 * @Description:ÏòËùÓĞÔÚÏßÓÃ»§·¢ËÍ¹ã²¥
-	 * @auther: wutp 2016Äê10ÔÂ15ÈÕ
+	 * @Description:å‘æ‰€æœ‰åœ¨çº¿ç”¨æˆ·å‘é€å¹¿æ’­
+	 * @auther: wutp 2016å¹´10æœˆ15æ—¥
 	 * @param str
 	 * @return void
 	 */
@@ -87,13 +87,13 @@ public class ServerServer implements Runnable{
 		}
 	}
 
-	// Ç¿ÖÆÏÂÏß
+	// å¼ºåˆ¶ä¸‹çº¿
 	public void kickAway(String id) {
 		
 		ServerServer.signinThreads.get(id).closeSockt();
 		ServerServer.signinThreads.get(id).running=false;
 		ServerServer.signinThreads.remove(id);
-		broadcast(id + " " + " ±»·şÎñÆ÷¹ÜÀíÔ±Ç¿ÖÆÏÂÏßÁË");
+		broadcast(id + " " + " è¢«æœåŠ¡å™¨ç®¡ç†å‘˜å¼ºåˆ¶ä¸‹çº¿äº†");
 		this.AppWindow.delList(id);
 	}
 

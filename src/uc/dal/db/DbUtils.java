@@ -10,10 +10,10 @@ import java.util.Vector;
 
 /**
  * @Title: DbHelper.java
- * @Description: Í³Ò»²éÑ¯Àà ¡£Ô¤±àÒë£¬Í¨¹ı?¸³Öµ·½Ê½¿ÉÒÔ·ÀÖ¹Â©¶´×¢Èë·½Ê½£¬±£Ö¤°²È«ĞÔ¡£
+ * @Description: ç»Ÿä¸€æŸ¥è¯¢ç±» ã€‚é¢„ç¼–è¯‘ï¼Œé€šè¿‡?èµ‹å€¼æ–¹å¼å¯ä»¥é˜²æ­¢æ¼æ´æ³¨å…¥æ–¹å¼ï¼Œä¿è¯å®‰å…¨æ€§ã€‚
  * @author wutp
  * @version 1.0
- * @time 2016-8-17ÏÂÎç4:37:39
+ * @time 2016-8-17ä¸‹åˆ4:37:39
  */
 public class DbUtils {
 	private static Connection conn=null;
@@ -33,7 +33,7 @@ public class DbUtils {
 			throws SQLException{
 		try {
 			ps=conn.prepareStatement(sql);
-			System.out.println("Ö´ĞĞsql: " + sql + "************************");
+			System.out.println("ç¼–è¯‘sql: " + sql );
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw e;			
@@ -45,7 +45,7 @@ public class DbUtils {
 
 	/**
 	 * @Description:
-	 * @auther: wutongpeng 2016Äê9ÔÂ25ÈÕ 
+	 * @auther: wutongpeng 2016å¹´9æœˆ25æ—¥ 
 	 * @return
 	 * @throws SQLException: Statement
 	 */
@@ -62,7 +62,7 @@ public class DbUtils {
 	}
 	
 	/**
-	 * @Description:·µ»Ø±í
+	 * @Description:è¿”å›è¡¨
 	 * @param sql
 	 * @param params	
 	 * @return ResultSet
@@ -75,7 +75,7 @@ public class DbUtils {
 			for(int i=0;i<params.length;i++)			
 				ps.setString(i+1, params[i]);			
 			rs=ps.executeQuery();
-			System.out.println("Ö´ĞĞsql: " + sql + "************************");
+			System.out.println("æ‰§è¡Œsql: " + sql );
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
@@ -86,8 +86,32 @@ public class DbUtils {
 	}
 	
 	/**
-	 * @Description:ÏÔÊ¾±í
-	 * @auther: wutp 2016Äê10ÔÂ17ÈÕ
+	 * @Description:è¿”å›è¡¨
+	 * @param sql
+	 * @param params	
+	 * @return ResultSet
+	 * @throws SQLException 
+	 */
+	public static ResultSet getResultSet2(Connection conn,String sql,String []params) 
+			throws SQLException{
+		try {
+			ps=conn.prepareStatement(sql);
+			for(int i=0;i<params.length;i++)			
+				ps.setString(i+1, params[i]);			
+			rs=ps.executeQuery();
+			System.out.println("æ‰§è¡Œsql: " + sql );
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		} finally {
+			//ConnectionUtil.BackPreparedStatement(conn,ps, rs);
+		}
+		return rs;
+	}
+	
+	/**
+	 * @Description:æ˜¾ç¤ºè¡¨
+	 * @auther: wutp 2016å¹´10æœˆ17æ—¥
 	 * @param conn
 	 * @param sql
 	 * @param params
@@ -97,15 +121,15 @@ public class DbUtils {
 	 */
 	public static Vector[] query(Connection conn,String sql, String[] params) 
 			throws SQLException{
-		// ³õÊ¼»¯
+		// åˆå§‹åŒ–
 		Vector[] data = new Vector[2];
 		Vector<String> colums = new Vector<String>();
 		Vector<Vector> rows = new Vector<Vector>();
 		// Vector[2] = new Vector[2];
-		// this.colums.add("Ô±¹¤ºÅ");
-		// this.colums.add("ĞÕÃû");
-		// this.colums.add("ĞÔ±ğ");
-		// this.colums.add("Ö°Î»");			
+		// this.colums.add("å‘˜å·¥å·");
+		// this.colums.add("å§“å");
+		// this.colums.add("æ€§åˆ«");
+		// this.colums.add("èŒä½");			
 		try {
 			ResultSet rs = getResultSet(conn,sql, params);
 			ResultSetMetaData rsmd = rs.getMetaData();
@@ -135,20 +159,20 @@ public class DbUtils {
 	}
 
 	/**
-	 * @Description:²é¿´ÓĞ¶àÉÙ¼ÇÂ¼
+	 * @Description:æŸ¥çœ‹æœ‰å¤šå°‘è®°å½•
 	 * @param sql
 	 * @return
 	 * @return int
 	 * @throws SQLException 
 	 */
-	public static int getExecuteCount(String sql,String []params) throws SQLException{
+	public static int getExecuteCount(Connection conn,String sql,String []params) throws SQLException{
 		int sum=0;
 		try {
 			ps=conn.prepareStatement(sql);
 			for(int i=0;i<params.length;i++)
 				ps.setString(i+1, params[i]);
 			rs=ps.executeQuery();
-			System.out.println("Ö´ĞĞsql: " + sql + "************************");
+			System.out.println("æ‰§è¡Œsql: " + sql );
 			if(rs.next())
 				sum=rs.getInt(1);
 		} catch (Exception e) {
@@ -160,7 +184,7 @@ public class DbUtils {
 	}
 	
 	/**
-	 * @Description:»ñµÃ×î´ó±àºÅ
+	 * @Description:è·å¾—æœ€å¤§ç¼–å·
 	 * @param sql
 	 * @return
 	 * @return String
@@ -173,7 +197,7 @@ public class DbUtils {
 		try {
 			ps=conn.prepareStatement(sql);			
 			rs=ps.executeQuery();
-			System.out.println("Ö´ĞĞsql: " + sql + "************************");
+			System.out.println("æ‰§è¡Œsql: " + sql );
 			if(rs.next())
 				max=rs.getString(value);
 		} catch (Exception e) {
@@ -186,7 +210,7 @@ public class DbUtils {
 
 
 	/**
-	 * @Description:²éÕÒÊÇ·ñ´æÖ¸¶¨ĞÅÏ¢
+	 * @Description:æŸ¥æ‰¾æ˜¯å¦å­˜æŒ‡å®šä¿¡æ¯
 	 * @param sql
 	 * @param params
 	 * @return String
@@ -198,12 +222,13 @@ public class DbUtils {
 		try {
 			ps=conn.prepareStatement(sql);			
 			for(int i=0;i<params.length;i++){
-				System.out.println("²ÎÊıÎª£º" + params[i]);
+				System.out.println("å‚æ•°ä¸ºï¼š" + params[i]);
  				ps.setString(i+1, params[i]);
  			}
 			rs=ps.executeQuery();
+			System.out.println("æ‰§è¡Œsql: " + sql );
 			if(rs.next() && rs.getInt(1) >= 1)
-				confInfo = true;			 					
+				confInfo = true;			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;		
@@ -215,7 +240,7 @@ public class DbUtils {
 
 
 	/**
-	 * @Description:ÔöÉ¾¸Ä
+	 * @Description:å¢åˆ æ”¹
 	 * @param sql
 	 * @param params
 	 * @return boolean
@@ -228,10 +253,10 @@ public class DbUtils {
 			ps=conn.prepareStatement(sql);
 			for(int i=0;i<params.length;i++)
 				ps.setString(i+1, params[i]);
+			System.out.println("æ‰§è¡Œsql: " + sql );
 			if(ps.executeUpdate()==1)
-				confInfo = true;
-			System.out.println("Ö´ĞĞsql: " + sql + "************************");
-		} catch (Exception e) {
+				confInfo = true;					
+			} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
 		} finally {
@@ -249,6 +274,7 @@ public class DbUtils {
 				ConnectionUtil.BackPreparedStatement(conn,stmt);
 			else
 				ConnectionUtil.BackPreparedStatement(conn,stmt,rs);
+			System.out.println("å…³é—­æ•°æ®åº“è¿æ¥ï¼");
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;

@@ -10,8 +10,8 @@ import uc.dal.sevice.TableModel;
 import java.awt.event.*;
 
 /**
- * @Description: ĞŞ¸Ä½çÃæ
- * @author wutp 2016Äê10ÔÂ16ÈÕ
+ * @Description: ä¿®æ”¹ç•Œé¢
+ * @author wutp 2016å¹´10æœˆ16æ—¥
  * @version 1.0
  */
 public class UpSmJDialog extends JDialog implements ActionListener{
@@ -102,10 +102,10 @@ public class UpSmJDialog extends JDialog implements ActionListener{
 	
 
 		p3=new JPanel(new FlowLayout(FlowLayout.CENTER));
-		jb1=new JButton("ĞŞ¸Ä");
+		jb1=new JButton("ä¿®æ”¹");
 		//jb1.setFont(MyTools.f4);
 		jb1.addActionListener(this);
-		jb2=new JButton("È¡Ïû");
+		jb2=new JButton("å–æ¶ˆ");
 		//jb2.setFont(MyTools.f4);
 		jb2.addActionListener(this);
 		p3.add(jb1);
@@ -124,7 +124,7 @@ public class UpSmJDialog extends JDialog implements ActionListener{
 	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		// TODO ×Ô¶¯Éú³ÉµÄ·½·¨´æ¸ù
+		// TODO è‡ªåŠ¨ç”Ÿæˆçš„æ–¹æ³•å­˜æ ¹
 		if(arg0.getSource()==jb1)
 		{
 			String sql="update USERINFO set uc=?,pwd=? ,sign=?,photoid=?,nickname=?,sex=?,birthday=?,"
@@ -134,9 +134,9 @@ public class UpSmJDialog extends JDialog implements ActionListener{
 			TableModel em=new TableModel();
 			if(!em.UpdateModel(sql, params))
 			{
-				JOptionPane.showMessageDialog(null, "ĞŞ¸ÄÊ§°Ü£¬ÇëÊäÈëÕıÈ·Êı¾İÀàĞÍ!");
+				JOptionPane.showMessageDialog(null, "ä¿®æ”¹å¤±è´¥ï¼Œè¯·è¾“å…¥æ­£ç¡®æ•°æ®ç±»å‹!");
 			}
-			JOptionPane.showMessageDialog(null, "¹§Ï²£¡ĞŞ¸Ä³É¹¦£¡");
+			JOptionPane.showMessageDialog(null, "æ­å–œï¼ä¿®æ”¹æˆåŠŸï¼");
 			this.dispose();
 		}
 		else if(arg0.getSource()==jb2)

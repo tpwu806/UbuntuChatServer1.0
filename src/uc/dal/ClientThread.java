@@ -9,14 +9,14 @@ import java.util.Iterator;
 import java.util.Set;
 
 import uc.dal.sevice.TableModel;
-import uc.dal.sevice.UserService;
+import uc.dal.sevice.UcService;
 import uc.dof.ServerJFrame;
 import uc.pub.common.MessageBean;
 import uc.pub.common.MessageType;
 
 /**
- * @Description: Á¬½Ó¿Í»§¶ËµÄÏß³Ì
- * @author wutp 2016Äê10ÔÂ13ÈÕ
+ * @Description: è¿æ¥å®¢æˆ·ç«¯çš„çº¿ç¨‹
+ * @author wutp 2016å¹´10æœˆ13æ—¥
  * @version 1.0
  */
 public class ClientThread implements Runnable {
@@ -26,163 +26,63 @@ public class ClientThread implements Runnable {
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
 	private ServerJFrame AppWindow;
-	private UserService userService ; 
+	private UcService ucService ; 
+	private MessageBean mbean;
 
 	public ClientThread(Socket socket, ServerJFrame AppWindow) {
 		this.clientsocket = socket;
 		this.AppWindow = AppWindow;
-		userService = new UserService();
+		ucService = new UcService();
 	}
 
 	volatile boolean running = true;
 
 	@Override
 	public void run() {
-		try {
-			MessageBean mbean;
+		try {			
 			while (running) {
 				ois = new ObjectInputStream(clientsocket.getInputStream());								
 				bean = (MessageBean) ois.readObject();
-
-				// ·ÖÎöcatbeanÖĞ£¬typeÊÇÄÇÑùÒ»ÖÖÀàĞÍ
+				
 				switch (bean.getType()) {
-				// µÇÂ¼
+				// ç™»å½•
 				case MessageType.SIGN_IN: {
-					System.out.println(bean.getType() + ":" + bean.getName() + bean.getPwd());
-					mbean = new MessageBean();
-					
-					if (userService.checkUser(bean.getName().trim(), bean.getPwd().trim())) {
-						System.out.println("sqlÑéÖ¤³É¹¦");
-						mbean.setType(MessageType.SIGN_IN_SUCCESS);
-						oos = new ObjectOutputStream(clientsocket.getOutputStream());
-						oos.writeObject(mbean);
-						oos.flush();
-
-						ServerServer.signinThreads.put(bean.getName(), this);
-						AppWindow.AddList(bean.getName());
-						// ¸æËßÆäËûÈËÎÒÉÏÏßÁË
-						/*MessageBean serverBean = new MessageBean();
-						serverBean.setType(MessageType.SERVER_SIGN_IN_NOTICE);
-						serverBean.setName(bean.getName());
-						serverBean.setInfo(bean.getTimer() + "  " + bean.getName() + "ÉÏÏßÁË");
-
-						sendOtherAll(serverBean);*/
-						updateFriendsList(bean.getName());
-
-					} else {
-						bean = new MessageBean();
-						bean.setType(MessageType.SIGN_IN_FALSE);
-						oos = new ObjectOutputStream(clientsocket.getOutputStream());
-						oos.writeObject(mbean);
-						oos.flush();
-
-						System.out.println("sqlÑéÖ¤Ê§°Ü");
-					}
+					ActionSignIn(bean);
 					break;
 				}
-				// ×¢²á
+				// æ³¨å†Œ
 				case MessageType.SIGN_UP: {
-					mbean = new MessageBean();
-					System.out.println(bean.getType() + bean.getName() + bean.getPwd());
-					String sql = "insert into User values(?,?,?)";
-					String name = bean.getName().trim();
-					String pwd = bean.getPwd().trim();
-					String power = "user";
-					String[] params = { name, pwd, power };
-					System.out.printf(name, pwd, power);
-					TableModel tm = new TableModel();
-
-					if (!tm.UpdateModel(sql, params)) {
-						mbean.setType(MessageType.SIGN_UP_SUCCESS);
-						oos = new ObjectOutputStream(clientsocket.getOutputStream());
-						oos.writeObject(mbean);
-						oos.flush();
-
-						System.out.println("sql×¢²á³É¹¦");
-					} else {
-						mbean.setType(MessageType.SIGN_UP_FALSE);
-						oos = new ObjectOutputStream(clientsocket.getOutputStream());
-						oos.writeObject(mbean);
-						oos.flush();
-						System.out.println("sql×¢²á³É¹¦");
-					}
+					ActionSignUp(bean);					
 					break;
 				}
-
-				case MessageType.SIGN_OUT: { // ÏÂÏß															
-					// ¸æËßÆäËûÈËÎÒÏÂÏßÁË
-					MessageBean serverBean = new MessageBean();
-					serverBean.setType(MessageType.SERVER_BROADCAST);
-					serverBean.setName(bean.getName());
-					serverBean.setInfo(bean.getTimer() + "  " + bean.getName() + "ÏÂÏßÁË");
-					//sendOtherAll(serverBean);
-					AppWindow.delList(bean.getName());
-					
-					ServerServer.signinThreads.remove(bean.getName());
-					closeSockt();
-					this.running=false;
+				// ä¸‹çº¿	
+				case MessageType.SIGN_OUT: { 														
+					ActionSignOut(bean);
 					//return;
-				}				
-				case MessageType.CLIENT_CHAR: { // ÁÄÌì
-					// ´´½¨·şÎñÆ÷µÄcatbean£¬²¢·¢ËÍ¸ø¿Í»§¶Ë
-					MessageBean serverBean = new MessageBean();
-					serverBean.setType(MessageType.CLIENT_CHAR);
-					serverBean.setClients(bean.getClients());
-					serverBean.setInfo(bean.getInfo());
-					serverBean.setName(bean.getName());
-					serverBean.setTimer(bean.getTimer());
-					// ÏòÑ¡ÖĞµÄ¿Í»§·¢ËÍÊı¾İ
-					sendMessage(serverBean);
+				}
+				// èŠå¤©
+				case MessageType.CLIENT_CHAR: { 
+					ActionClientChar(bean);
 					break;
 				}
-				case MessageType.FILE_REQUESTION: { // ÇëÇó½ÓÊÜÎÄ¼ş
-					// ´´½¨·şÎñÆ÷µÄcatbean£¬²¢·¢ËÍ¸ø¿Í»§¶Ë
-					MessageBean serverBean = new MessageBean();
-					String info = bean.getTimer() + "  " + bean.getName() + "ÏòÄã´«ËÍÎÄ¼ş,ÊÇ·ñĞèÒª½ÓÊÜ";
-
-					serverBean.setType(MessageType.FILE_REQUESTION);
-					serverBean.setClients(bean.getClients()); // ÕâÊÇ·¢ËÍµÄÄ¿µÄµØ
-					serverBean.setFileName(bean.getFileName()); // ÎÄ¼şÃû³Æ
-					serverBean.setSize(bean.getSize()); // ÎÄ¼ş´óĞ¡
-					serverBean.setInfo(info);
-					serverBean.setName(bean.getName()); // À´Ô´
-					serverBean.setTimer(bean.getTimer());
-					// ÏòÑ¡ÖĞµÄ¿Í»§·¢ËÍÊı¾İ
-					sendMessage(serverBean);
-
+				// è¯·æ±‚æ¥å—æ–‡ä»¶
+				case MessageType.FILE_REQUESTION: { 
+					ActionFileRequestion(bean);
 					break;
 				}
-				case MessageType.FILE_RECEIVE: { // È·¶¨½ÓÊÕÎÄ¼ş
-					MessageBean serverBean = new MessageBean();
-
-					serverBean.setType(MessageType.FILE_RECEIVE);
-					serverBean.setClients(bean.getClients()); // ÎÄ¼şÀ´Ô´
-					serverBean.setTo(bean.getTo()); // ÎÄ¼şÄ¿µÄµØ
-					serverBean.setFileName(bean.getFileName()); // ÎÄ¼şÃû³Æ
-					serverBean.setIp(bean.getIp());
-					serverBean.setPort(bean.getPort());
-					serverBean.setName(bean.getName()); // ½ÓÊÕµÄ¿Í»§Ãû³Æ
-					serverBean.setTimer(bean.getTimer());
-					// Í¨ÖªÎÄ¼şÀ´Ô´µÄ¿Í»§£¬¶Ô·½È·¶¨½ÓÊÕÎÄ¼ş
-					sendMessage(serverBean);
+				// ç¡®å®šæ¥æ”¶æ–‡ä»¶
+				case MessageType.FILE_RECEIVE: { 
+					ActionFileReceive(bean);					
 					break;
 				}
+				// ç¡®å®šæ¥æ”¶æ–‡ä»¶
 				case MessageType.FILE_RECEIVE_OK: {
-					MessageBean serverBean = new MessageBean();
-
-					serverBean.setType(MessageType.FILE_RECEIVE_OK);
-					serverBean.setClients(bean.getClients()); // ÎÄ¼şÀ´Ô´\
-					serverBean.setTo(bean.getTo()); // ÎÄ¼şÄ¿µÄµØ
-					serverBean.setFileName(bean.getFileName());
-					serverBean.setInfo(bean.getInfo());
-					serverBean.setName(bean.getName());// ½ÓÊÕµÄ¿Í»§Ãû³Æ
-					serverBean.setTimer(bean.getTimer());
-					sendMessage(serverBean);
-
+					ActionFileReceiveOk(bean);					
 					break;
 				}
+				// ä¸€å¯¹ä¸€èŠå¤©
 				case MessageType.SINGLETON_CHAR: { 					
-					sendSingleton(bean);					
+					ActionSingletonChar(bean);					
 					break;
 				}
 				default: {
@@ -190,70 +90,124 @@ public class ClientThread implements Runnable {
 				}
 				}
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();		
 		} finally {
 			closeSockt();
 		}
 	}
-
+	
 	/**
-	 * @Description:¸üĞÂºÃÓÑÁĞ±í
-	 * @auther: wutp 2016Äê10ÔÂ15ÈÕ
+	 * @Description:
+	 * @auther: wutp 2016å¹´10æœˆ22æ—¥
 	 * @return void
+	 * @throws IOException 
 	 */
-	private void updateFriendsList(String name){
-		//Ê×ÏÈÈ¡µÃËùÓĞµÄÔÚÏßÓÃ»§
-		HashSet<String> hs = new HashSet<>();		
-		hs.addAll(ServerServer.signinThreads.keySet());
-		MessageBean serverBean = new MessageBean();
-		serverBean.setType(MessageType.SERVER_UPDATE_FRIENDS);
-		serverBean.setClients(hs);
+	private void ActionSignIn(MessageBean bean) throws IOException{
+		MessageBean mbean;
+		System.out.println(bean.getType() + ":" + bean.getName() + bean.getPwd());
+		mbean = new MessageBean();
 		
-		sendMessage(serverBean);
-	}
+		if (ucService.checkUser(bean.getName().trim(), bean.getPwd().trim())) {
+			System.out.println("sqléªŒè¯æˆåŠŸ");
+			mbean.setType(MessageType.SIGN_IN_SUCCESS);
+			oos = new ObjectOutputStream(clientsocket.getOutputStream());
+			oos.writeObject(mbean);
+			oos.flush();
 
-	/**
-	 * @Description:// ÏòÑ¡ÖĞµÄÓÃ»§·¢ËÍÊı¾İ
-	 * @auther: wutp 2016Äê10ÔÂ15ÈÕ
-	 * @param serverBean
-	 * @return void
-	 */
-	private void sendMessage(MessageBean serverBean) {
-		// Ê×ÏÈÈ¡µÃËùÓĞµÄÔÚÏßÓÃ»§
-		Set<String> onlines = ServerServer.signinThreads.keySet();
-		Iterator<String> it = onlines.iterator();
-		// Ñ¡ÖĞ¿Í»§
-		HashSet<String> clients = serverBean.getClients();
+			ServerServer.signinThreads.put(bean.getName(), this);
+			AppWindow.AddList(bean.getName());
+			// å‘Šè¯‰å…¶ä»–äººæˆ‘ä¸Šçº¿äº†
+			/*MessageBean serverBean = new MessageBean();
+			serverBean.setType(MessageType.SERVER_SIGN_IN_NOTICE);
+			serverBean.setName(bean.getName());
+			serverBean.setInfo(bean.getTimer() + "  " + bean.getName() + "ä¸Šçº¿äº†");
 
-		while (it.hasNext()) {
-			// Ñ¡ÖĞ¿Í»§
-			String onlineClientName = it.next();
-			// Ñ¡ÖĞµÄ¿Í»§ÖĞÈôÊÇÔÚÏßµÄ£¬¾Í·¢ËÍserverbean
-			if (clients.contains(onlineClientName)) {
-				Socket c = ServerServer.signinThreads.get(onlineClientName).clientsocket;
-				ObjectOutputStream oos;
-				try {
-					oos = new ObjectOutputStream(c.getOutputStream());
-					oos.writeObject(serverBean);
-					oos.flush();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+			sendOtherAll(serverBean);*/
+			updateFriendsList(bean.getName());
 
-			}
+		} else {
+			bean = new MessageBean();
+			bean.setType(MessageType.SIGN_IN_FALSE);
+			oos = new ObjectOutputStream(clientsocket.getOutputStream());
+			oos.writeObject(mbean);
+			oos.flush();
+
+			System.out.println("sqléªŒè¯å¤±è´¥");
 		}
 	}
 	
 	/**
-	 * @Description:Ò»¶ÔÒ»ÁÄÌì
-	 * @auther: wutp 2016Äê10ÔÂ16ÈÕ
+	 * @Description:
+	 * @auther: wutp 2016å¹´10æœˆ22æ—¥
+	 * @param bean
+	 * @throws IOException
+	 * @return void
+	 */
+	private void ActionSignUp(MessageBean bean) throws IOException{
+		mbean = new MessageBean();
+		System.out.println(bean.getType() + bean.getName() + bean.getPwd());
+		String sql = "insert into User values(?,?,?)";
+		String name = bean.getName().trim();
+		String pwd = bean.getPwd().trim();
+		String power = "user";
+		String[] params = { name, pwd, power };
+		System.out.printf(name, pwd, power);
+		TableModel tm = new TableModel();
+
+		if (!tm.UpdateModel(sql, params)) {
+			mbean.setType(MessageType.SIGN_UP_SUCCESS);
+			oos = new ObjectOutputStream(clientsocket.getOutputStream());
+			oos.writeObject(mbean);
+			oos.flush();
+
+			System.out.println("sqlæ³¨å†ŒæˆåŠŸ");
+		} else {
+			mbean.setType(MessageType.SIGN_UP_FALSE);
+			oos = new ObjectOutputStream(clientsocket.getOutputStream());
+			oos.writeObject(mbean);
+			oos.flush();
+			System.out.println("sqlæ³¨å†ŒæˆåŠŸ");
+		}
+	}
+
+	/**
+	 * @Description:
+	 * @auther: wutp 2016å¹´10æœˆ22æ—¥
+	 * @param bean
+	 * @throws IOException
+	 * @return void
+	 */
+	private void ActionSignOut(MessageBean bean) throws IOException{
+		// å‘Šè¯‰å…¶ä»–äººæˆ‘ä¸‹çº¿äº†
+		mbean = new MessageBean();
+		mbean.setType(MessageType.SERVER_BROADCAST);
+		mbean.setName(bean.getName());
+		mbean.setInfo(bean.getTimer() + "  " + bean.getName() + "ä¸‹çº¿äº†");
+		AppWindow.delList(bean.getName());
+		
+		ServerServer.signinThreads.remove(bean.getName());
+		closeSockt();
+		this.running=false;
+	}
+	
+	private void ActionClientChar(MessageBean bean) throws IOException{
+		// åˆ›å»ºæœåŠ¡å™¨çš„catbeanï¼Œå¹¶å‘é€ç»™å®¢æˆ·ç«¯
+		mbean.setType(MessageType.CLIENT_CHAR);
+		mbean.setClients(bean.getClients());
+		mbean.setInfo(bean.getInfo());
+		mbean.setName(bean.getName());
+		mbean.setTimer(bean.getTimer());
+		// å‘é€‰ä¸­çš„å®¢æˆ·å‘é€æ•°æ®
+		sendMessage(mbean);
+	}
+	/**
+	 * @Description:ä¸€å¯¹ä¸€èŠå¤©
+	 * @auther: wutp 2016å¹´10æœˆ16æ—¥
 	 * @param serverBean
 	 * @return void
 	 */
-	private void sendSingleton(MessageBean bean){
+	private void ActionSingletonChar(MessageBean bean)throws IOException{
 		ObjectOutputStream oos;
 		MessageBean serverBean;
 		try {		
@@ -277,23 +231,134 @@ public class ClientThread implements Runnable {
 		}
 		
 	}
+	
+	/**
+	 * @Description:
+	 * @auther: wutp 2016å¹´10æœˆ22æ—¥
+	 * @param bean
+	 * @throws IOException
+	 * @return void
+	 */
+	private void ActionFileRequestion(MessageBean bean)throws IOException{
+		// åˆ›å»ºæœåŠ¡å™¨çš„catbeanï¼Œå¹¶å‘é€ç»™å®¢æˆ·ç«¯
+		mbean = new MessageBean();
+		String info = bean.getTimer() + "  " + bean.getName() + "å‘ä½ ä¼ é€æ–‡ä»¶,æ˜¯å¦éœ€è¦æ¥å—";
+
+		mbean.setType(MessageType.FILE_REQUESTION);
+		mbean.setClients(bean.getClients()); // è¿™æ˜¯å‘é€çš„ç›®çš„åœ°
+		mbean.setFileName(bean.getFileName()); // æ–‡ä»¶åç§°
+		mbean.setSize(bean.getSize()); // æ–‡ä»¶å¤§å°
+		mbean.setInfo(info);
+		mbean.setName(bean.getName()); // æ¥æº
+		mbean.setTimer(bean.getTimer());
+		// å‘é€‰ä¸­çš„å®¢æˆ·å‘é€æ•°æ®
+		sendMessage(mbean);
+	}
+	/**
+	 * @Description:
+	 * @auther: wutp 2016å¹´10æœˆ22æ—¥
+	 * @param bean
+	 * @throws IOException
+	 * @return void
+	 */
+	private void ActionFileReceive(MessageBean bean)throws IOException{
+		mbean = new MessageBean();
+		mbean.setType(MessageType.FILE_RECEIVE);
+		mbean.setClients(bean.getClients()); // æ–‡ä»¶æ¥æº
+		mbean.setTo(bean.getTo()); // æ–‡ä»¶ç›®çš„åœ°
+		mbean.setFileName(bean.getFileName()); // æ–‡ä»¶åç§°
+		mbean.setIp(bean.getIp());
+		mbean.setPort(bean.getPort());
+		mbean.setName(bean.getName()); // æ¥æ”¶çš„å®¢æˆ·åç§°
+		mbean.setTimer(bean.getTimer());
+		// é€šçŸ¥æ–‡ä»¶æ¥æºçš„å®¢æˆ·ï¼Œå¯¹æ–¹ç¡®å®šæ¥æ”¶æ–‡ä»¶
+		sendMessage(mbean);
+	}
+	/**
+	 * @Description:
+	 * @auther: wutp 2016å¹´10æœˆ22æ—¥
+	 * @param bean
+	 * @throws IOException
+	 * @return void
+	 */
+	private void ActionFileReceiveOk(MessageBean bean)throws IOException{
+		mbean = new MessageBean();
+
+		mbean.setType(MessageType.FILE_RECEIVE_OK);
+		mbean.setClients(bean.getClients()); // æ–‡ä»¶æ¥æº\
+		mbean.setTo(bean.getTo()); // æ–‡ä»¶ç›®çš„åœ°
+		mbean.setFileName(bean.getFileName());
+		mbean.setInfo(bean.getInfo());
+		mbean.setName(bean.getName());// æ¥æ”¶çš„å®¢æˆ·åç§°
+		mbean.setTimer(bean.getTimer());
+		sendMessage(mbean);
+
+	}
 
 	/**
-	 * @Description:ÏòËùÓĞµÄÓÃ»§·¢ËÍĞÅÏ¢
-	 * @auther: wutp 2016Äê10ÔÂ14ÈÕ
+	 * @Description:æ›´æ–°å¥½å‹åˆ—è¡¨
+	 * @auther: wutp 2016å¹´10æœˆ15æ—¥
+	 * @return void
+	 */
+	private void updateFriendsList(String name){
+		//é¦–å…ˆå–å¾—æ‰€æœ‰çš„åœ¨çº¿ç”¨æˆ·
+		HashSet<String> hs = new HashSet<>();		
+		hs.addAll(ServerServer.signinThreads.keySet());
+		MessageBean serverBean = new MessageBean();
+		serverBean.setType(MessageType.SERVER_UPDATE_FRIENDS);
+		serverBean.setClients(hs);
+		
+		sendMessage(serverBean);
+	}
+
+	/**
+	 * @Description:// å‘é€‰ä¸­çš„ç”¨æˆ·å‘é€æ•°æ®
+	 * @auther: wutp 2016å¹´10æœˆ15æ—¥
+	 * @param serverBean
+	 * @return void
+	 */
+	private void sendMessage(MessageBean serverBean) {
+		// é¦–å…ˆå–å¾—æ‰€æœ‰çš„åœ¨çº¿ç”¨æˆ·
+		Set<String> onlines = ServerServer.signinThreads.keySet();
+		Iterator<String> it = onlines.iterator();
+		// é€‰ä¸­å®¢æˆ·
+		HashSet<String> clients = serverBean.getClients();
+
+		while (it.hasNext()) {
+			// é€‰ä¸­å®¢æˆ·
+			String onlineClientName = it.next();
+			// é€‰ä¸­çš„å®¢æˆ·ä¸­è‹¥æ˜¯åœ¨çº¿çš„ï¼Œå°±å‘é€serverbean
+			if (clients.contains(onlineClientName)) {
+				Socket c = ServerServer.signinThreads.get(onlineClientName).clientsocket;
+				ObjectOutputStream oos;
+				try {
+					oos = new ObjectOutputStream(c.getOutputStream());
+					oos.writeObject(serverBean);
+					oos.flush();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+			}
+		}
+	}
+	
+	/**
+	 * @Description:å‘æ‰€æœ‰çš„ç”¨æˆ·å‘é€ä¿¡æ¯
+	 * @auther: wutp 2016å¹´10æœˆ14æ—¥
 	 * @param serverBean
 	 * @return void
 	 */
 	@Deprecated
 	private void sendOtherAll(MessageBean serverBean) {
-		//Ê×ÏÈÈ¡µÃËùÓĞµÄÔÚÏßÓÃ»§
+		//é¦–å…ˆå–å¾—æ‰€æœ‰çš„åœ¨çº¿ç”¨æˆ·
 		Set<String> signins = ServerServer.signinThreads.keySet();
 		signins.remove(serverBean.getName());
 		if(!signins.isEmpty()){
 			Iterator<String> it = signins.iterator();
 
 			while (it.hasNext()) {
-				// Ñ¡ÖĞ¿Í»§
+				// é€‰ä¸­å®¢æˆ·
 				String onlineClientName = it.next();
 
 				Socket c = ServerServer.signinThreads.get(onlineClientName).clientsocket;
@@ -311,8 +376,8 @@ public class ClientThread implements Runnable {
 	}
 	
 	/**
-	 * @Description:¹Ø±ÕSocket
-	 * @auther: wutp 2016Äê10ÔÂ14ÈÕ
+	 * @Description:å…³é—­Socket
+	 * @auther: wutp 2016å¹´10æœˆ14æ—¥
 	 * @return void
 	 */
 	public void closeSockt() {

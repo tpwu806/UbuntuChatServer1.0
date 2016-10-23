@@ -9,8 +9,8 @@ import uc.dal.sevice.TableModel;
 import java.awt.event.*;
 
 /**
- * @Description: Ìí¼Ó½çÃæ
- * @author wutp 2016Äê10ÔÂ16ÈÕ
+ * @Description: æ·»åŠ ç•Œé¢
+ * @author wutp 2016å¹´10æœˆ16æ—¥
  * @version 1.0
  */
 public class AddSmJDialog extends JDialog implements ActionListener{
@@ -87,10 +87,10 @@ public class AddSmJDialog extends JDialog implements ActionListener{
 		p2.add(jtf13);
 		
 		p3=new JPanel(new FlowLayout(FlowLayout.CENTER));
-		jb1=new JButton("Ìí¼Ó");
+		jb1=new JButton("æ·»åŠ ");
 	//	jb1.setFont(MyTools.f4);
 		jb1.addActionListener(this);
-		jb2=new JButton("È¡Ïû");
+		jb2=new JButton("å–æ¶ˆ");
 	//	jb2.setFont(MyTools.f4);
 		jb2.addActionListener(this);
 		p3.add(jb1);
@@ -103,13 +103,13 @@ public class AddSmJDialog extends JDialog implements ActionListener{
 
 		this.setSize(400,500);
 
-		this.setTitle("Ìí¼ÓÓÃ»§");
+		this.setTitle("æ·»åŠ ç”¨æˆ·");
 		this.setVisible(true);
 	}
 	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		// TODO ×Ô¶¯Éú³ÉµÄ·½·¨´æ¸ù
+		// TODO è‡ªåŠ¨ç”Ÿæˆçš„æ–¹æ³•å­˜æ ¹
 		if(arg0.getSource()==jb1){
 			String sql="insert into USERINFO(uc,pwd,sign,photoid,nickname,sex,birthday,constellatton,constellation,bloodtype,"
 					+ "telephone,email,address) values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -118,7 +118,7 @@ public class AddSmJDialog extends JDialog implements ActionListener{
 			TableModel tm=new TableModel();
 			if(!tm.UpdateModel(sql, params))
 			{
-				JOptionPane.showMessageDialog(null, "Ìí¼ÓÊ§°Ü£¬ÇëÊäÈëÕıÈ·Êı¾İÀàĞÍ£¡");
+				JOptionPane.showMessageDialog(null, "æ·»åŠ å¤±è´¥ï¼Œè¯·è¾“å…¥æ­£ç¡®æ•°æ®ç±»å‹ï¼");
 			}
 			
 			this.dispose();

@@ -8,49 +8,49 @@ import java.sql.ResultSetMetaData;
 import java.util.Vector;
 
 public class DbHelper {
-	//¶¨ÒåĞèÒªµÄ¶ÔÏó
+	//å®šä¹‰éœ€è¦çš„å¯¹è±¡
 	Connection con=null;
 	PreparedStatement ps=null;
 	ResultSet rs=null;
 	
-	String driver = "com.mysql.jdbc.Driver";
+	/*String driver = "com.mysql.jdbc.Driver";
 	String url = "jdbc:mysql://192.168.0.111:3306/chat";
 	String user = "root";
-	String pwd = "123456";
+	String pwd = "123456";*/
 	int sum=0;
-	//¹¹Ôìº¯Êı£¬³õÊ¼»¯ct
-	public DbHelper()
+	//æ„é€ å‡½æ•°ï¼Œåˆå§‹åŒ–ct
+	private DbHelper()
 	{
-		try {
-			//¼ÓÔØÇı¶¯
+		/*try {
+			//åŠ è½½é©±åŠ¨
 			Class.forName(driver);
-			//µÃµ½Á¬½Ó
+			//å¾—åˆ°è¿æ¥
 			con=DriverManager.getConnection(url,user,pwd);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 	}
-	//[]params£¬Í¨¹ı?¸³Öµ·½Ê½¿ÉÒÔ·ÀÖ¹Â©¶´×¢Èë·½Ê½£¬±£Ö¤°²È«ĞÔ
-	//µÇÂ¼ÑéÖ¤ ·µ»Ø±í
+	//[]paramsï¼Œé€šè¿‡?èµ‹å€¼æ–¹å¼å¯ä»¥é˜²æ­¢æ¼æ´æ³¨å…¥æ–¹å¼ï¼Œä¿è¯å®‰å…¨æ€§
+	//ç™»å½•éªŒè¯ è¿”å›è¡¨
 	public ResultSet queryExecute(String sql,String []params)
 	{
 		try {
 			ps=con.prepareStatement(sql);
-			//¶ÔsqlµÄ²ÎÊı¸³Öµ
+			//å¯¹sqlçš„å‚æ•°èµ‹å€¼
 			for(int i=0;i<params.length;i++)
 			{
 				ps.setString(i+1, params[i]);
 			}
-			//Ö´ĞĞ²éÑ¯
+			//æ‰§è¡ŒæŸ¥è¯¢
 			rs=ps.executeQuery();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		//·µ»Ø½á¹û¼¯
+		//è¿”å›ç»“æœé›†
 		return rs;
 	}
-	//²é¿´ÓĞ¶àÉÙ¼ÇÂ¼
+	//æŸ¥çœ‹æœ‰å¤šå°‘è®°å½•
 	public int queryExecute(String sql)
 	{
 		try {
@@ -65,21 +65,21 @@ public class DbHelper {
 			e.printStackTrace();
 			// TODO: handle exception
 		}
-		//·µ»Ø½á¹û¼¯
+		//è¿”å›ç»“æœé›†
 		return sum;
 	}
-	//ÔöÉ¾¸Ä
+	//å¢åˆ æ”¹
 	public boolean updateExecete(String sql,String []params)
 	{
 		boolean b=true;
 		try {
 			ps=con.prepareStatement(sql);
-			//¶ÔsqlµÄ²ÎÊı¸³Öµ
+			//å¯¹sqlçš„å‚æ•°èµ‹å€¼
 			for(int i=0;i<params.length;i++)
 			{
 				ps.setString(i+1, params[i]);
 			}
-			//Ö´ĞĞ²éÑ¯
+			//æ‰§è¡ŒæŸ¥è¯¢
 			if(ps.executeUpdate()!=1)
 			{
 				b=false;
@@ -93,29 +93,29 @@ public class DbHelper {
 		{
 			this.close();
 		}
-		//·µ»Ø½á¹û¼¯
+		//è¿”å›ç»“æœé›†
 		return b;
 		
 	}
 	
 	/**
-	 * @Description: ÏÔÊ¾±í
-	 * @auther: wutp 2016Äê10ÔÂ16ÈÕ
+	 * @Description: æ˜¾ç¤ºè¡¨
+	 * @auther: wutp 2016å¹´10æœˆ16æ—¥
 	 * @param sql
 	 * @param params
 	 * @return
 	 * @return Vector[]
 	 */
 	public Vector[] query(String sql, String[] params) {
-		// ³õÊ¼»¯
+		// åˆå§‹åŒ–
 		Vector[] data = new Vector[2];
 		Vector<String> colums = new Vector<String>();
 		Vector<Vector> rows = new Vector<Vector>();
 		//Vector[2] = new Vector[2];
-		// this.colums.add("Ô±¹¤ºÅ");
-		// this.colums.add("ĞÕÃû");
-		// this.colums.add("ĞÔ±ğ");
-		// this.colums.add("Ö°Î»");
+		// this.colums.add("å‘˜å·¥å·");
+		// this.colums.add("å§“å");
+		// this.colums.add("æ€§åˆ«");
+		// this.colums.add("èŒä½");
 		DbHelper hp = new DbHelper();
 		ResultSet rs = hp.queryExecute(sql, params);
 		try {
@@ -146,7 +146,7 @@ public class DbHelper {
 		return data;
 	}
 	
-	//¹Ø±Õ×ÊÔ´µÄ·½·¨
+	//å…³é—­èµ„æºçš„æ–¹æ³•
 	public void close()
 	{
 		try {

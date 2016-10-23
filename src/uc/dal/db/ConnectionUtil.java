@@ -1,6 +1,5 @@
 package uc.dal.db;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,7 +10,7 @@ import java.util.Properties;
 
 /**
  * @Description: 
- * @author wutp 2016ƒÍ10‘¬17»’
+ * @author wutp 2016Âπ¥10Êúà17Êó•
  * @version 1.0
  */
 public class ConnectionUtil {
@@ -23,24 +22,6 @@ public class ConnectionUtil {
 	private static String user;
 	private static String pwd;
 	
-	static {
-		Properties prop = new Properties();
-    	InputStream in = Object.class.getResourceAsStream("Properties.properties");   	
-    	try {    		
-    		if(in == null)
-    			throw new Exception("InputStream ∂¡»° ß∞‹£°");
-    		
-    		prop.load(in);
-    		driver = prop.getProperty(driver).trim();
-    		url = prop.getProperty(url).trim();	
-    		user = prop.getProperty(user).trim();
-    		pwd = prop.getProperty(pwd).trim();    		
-    		
-    	} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	private ConnectionUtil()throws Exception{
 		
 	}
@@ -48,27 +29,47 @@ public class ConnectionUtil {
 	
 	/**
 	 * @Description:
-	 * @auther: wutp 2016ƒÍ10‘¬17»’
+	 * @auther: wutp 2016Âπ¥10Êúà17Êó•
 	 * @return
 	 * @throws Exception
 	 * @return Connection
 	 */
-	private static Connection getConnection()throws Exception{
-		Connection con;	
+	public static Connection getConnection(){
+		Connection con = null;	
 		try {
+			initParameter();
 			Class.forName(driver);			
 			con=DriverManager.getConnection(url,user,pwd);
 		} catch (Exception e) {			
 			e.printStackTrace();
-			throw e;
+			//throw e;
 		}
 		return con;
 	}		
     
 	
+	private static void initParameter() {
+		Properties prop = new Properties();
+		InputStream in = Object.class.getResourceAsStream("/Properties.properties");   	
+		try {    		
+			if(in == null)
+				throw new Exception("InputStream ËØªÂèñÂ§±Ë¥•ÔºÅ");
+			
+			prop.load(in);
+			driver = prop.getProperty("driver").trim();
+			url = prop.getProperty("url").trim();	
+			user = prop.getProperty("user").trim();
+			pwd = prop.getProperty("pwd").trim();    		
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+
 	/**
 	 * @Description:
-	 * @auther: wutp 2016ƒÍ10‘¬17»’
+	 * @auther: wutp 2016Âπ¥10Êúà17Êó•
 	 * @param conn
 	 * @param stmt
 	 * @param rs
