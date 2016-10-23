@@ -6,7 +6,14 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Vector;
+
+import uc.pub.common.GroupTable;
 
 /**
  * @Title: DbHelper.java
@@ -264,6 +271,62 @@ public class DbUtils {
 		}
 		return confInfo;		
 	}
+	
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年10月23日
+	 * @param rs
+	 * @return
+	 * @throws java.sql.SQLException
+	 * @return List
+	 */
+	public static List<Map<String, Object>> resultSetToList(ResultSet rs) throws java.sql.SQLException {
+		if (rs == null)
+			return Collections.emptyList();
+		ResultSetMetaData md = rs.getMetaData(); // 得到结果集(rs)的结构信息，比如字段数、字段名等
+		int columnCount = md.getColumnCount(); // 返回此 ResultSet 对象中的列数
+		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+		Map<String, Object> rowData = null;
+		while (rs.next()) {
+			rowData = new HashMap<String, Object>(columnCount);
+			for (int i = 1; i <= columnCount; i++) {
+				rowData.put(md.getColumnName(i), rs.getObject(i));
+			}
+			list.add(rowData);			
+		}
+		System.out.println("list:" + list.toString());
+		return list;
+	}
+	
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年10月23日
+	 * @param rs
+	 * @return
+	 * @throws java.sql.SQLException
+	 * @return List
+	 */
+	/*public static List<GroupTable> resultSetToGroupTables(ResultSet rs) throws java.sql.SQLException {
+		List<GroupTable> groups = new ArrayList<GroupTable>();
+		GroupTable group = null;
+		if (rs == null)
+			return Collections.emptyList();
+		ResultSetMetaData md = rs.getMetaData(); // 得到结果集(rs)的结构信息，比如字段数、字段名等
+		int columnCount = md.getColumnCount(); // 返回此 ResultSet 对象中的列数
+		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+		Map<String, Object> rowData = null;
+		while (rs.next()) {
+			rowData = new HashMap<String, Object>(columnCount);
+			group = new GroupTable();
+			for (int i = 1; i <= columnCount; i++) {
+				//group.se
+				rowData.put(md.getColumnName(i), rs.getObject(i));
+			}
+			list.add(rowData);			
+		}
+		System.out.println("list:" + list.toString());
+		return list;
+	}*/
 	@Deprecated
 	public static void BackPreparedStatement(Connection conn,PreparedStatement stmt,
 			ResultSet rs)throws SQLException {	

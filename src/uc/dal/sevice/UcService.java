@@ -3,9 +3,15 @@ package uc.dal.sevice;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
+import uc.dal.dao.GroupTableDAO;
 import uc.dal.db.ConnectionUtil;
 import uc.dal.db.DbUtils;
+import uc.pub.common.GroupTable;
 
 /**
  * @Description: 
@@ -45,6 +51,66 @@ public class UcService {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年10月23日
+	 * @param name
+	 * @return void
+	 */
+	public static List<GroupTable> getGroupTable(String name) {
+		List<GroupTable> list = null;
+		Connection conn = ConnectionUtil.getConnection();
+		ResultSet rs = null;
+		try {
+			String sql = "SELECT gt.* FROM userinfo u, usergroup ug,grouptable gt ";
+			sql += "WHERE u.`NICKNAME` = ? ";
+			sql += "AND u.`UC` = ug.`UC`";
+			sql += "AND ug.`GNO` = gt.`GNO`;";
+			String[] params = {name};
+			rs = DbUtils.getResultSet2(conn,sql,params);
+			list =  GroupTableDAO.resultSetGroupTable(rs);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				ConnectionUtil.BackPreparedStatement(conn,null, rs);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return list;
+	}
+
+	public static void main(String[] args){
+		System.out.println("JJJJJJJJJJJJJJ");
+		//getGroupTable("system1");
+		Connection conn = ConnectionUtil.getConnection();
+		ResultSet rs = null;
+		String uc = null;
+		try {
+			String sql = "select UC from USERINFO where  nickname=? ";
+			String[] params = {"system1"};
+			rs = DbUtils.getResultSet2(conn,sql, params);
+			if (rs.next())
+				uc = rs.getString(1);
+			System.out.println(uc);
+			
+			sql = "select * from USERGROUP where UC = ?";
+			params = new String[1];
+			params[0] = uc;
+			rs = DbUtils.getResultSet2(conn,sql, params);
+			DbUtils.resultSetToList(rs);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				ConnectionUtil.BackPreparedStatement(conn,null, rs);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }

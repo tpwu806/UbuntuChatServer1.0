@@ -4,13 +4,16 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import uc.dal.sevice.TableModel;
 import uc.dal.sevice.UcService;
 import uc.dof.ServerJFrame;
+import uc.pub.common.GroupTable;
 import uc.pub.common.MessageBean;
 import uc.pub.common.MessageType;
 
@@ -27,7 +30,6 @@ public class ClientThread implements Runnable {
 	private ObjectOutputStream oos;
 	private ServerJFrame AppWindow;
 	private UcService ucService ; 
-	private MessageBean mbean;
 
 	public ClientThread(Socket socket, ServerJFrame AppWindow) {
 		this.clientsocket = socket;
@@ -85,6 +87,10 @@ public class ClientThread implements Runnable {
 					ActionSingletonChar(bean);					
 					break;
 				}
+				case MessageType.UPDATE_GROUP_FRIENDS: {
+					ActionUpdateGroupFriends(bean);
+					break;
+				}
 				default: {
 					break;
 				}
@@ -97,6 +103,16 @@ public class ClientThread implements Runnable {
 		}
 	}
 	
+	private void ActionUpdateGroupFriends(MessageBean bean) {
+		//List<String> groupFriends= ucService.getGroupFriends(bean.getGroupName().trim());
+		MessageBean mbean = new MessageBean();
+		mbean.setType(MessageType.UPDATE_GROUP_FRIENDS);
+		//mbean.setClients(clients);((ArrayList<GroupTable>)groupTables);
+		
+		sendSingletonMessage(mbean);
+		
+	}
+
 	/**
 	 * @Description:
 	 * @auther: wutp 2016年10月22日
@@ -110,21 +126,23 @@ public class ClientThread implements Runnable {
 		
 		if (ucService.checkUser(bean.getName().trim(), bean.getPwd().trim())) {
 			System.out.println("sql验证成功");
+			//发送登录成功消息，更新后台在线列表
 			mbean.setType(MessageType.SIGN_IN_SUCCESS);
-			oos = new ObjectOutputStream(clientsocket.getOutputStream());
-			oos.writeObject(mbean);
-			oos.flush();
+			sendSingletonMessage(mbean);
 
 			ServerServer.signinThreads.put(bean.getName(), this);
 			AppWindow.AddList(bean.getName());
+			
 			// 告诉其他人我上线了
-			/*MessageBean serverBean = new MessageBean();
-			serverBean.setType(MessageType.SERVER_SIGN_IN_NOTICE);
-			serverBean.setName(bean.getName());
-			serverBean.setInfo(bean.getTimer() + "  " + bean.getName() + "上线了");
-
-			sendOtherAll(serverBean);*/
 			updateFriendsList(bean.getName());
+			
+			//更新群信息
+			List<GroupTable> groupTables= ucService.getGroupTable(bean.getName().trim());
+			mbean = new MessageBean();
+			mbean.setType(MessageType.UPDATE_GROUP);
+			mbean.setGroups((ArrayList<GroupTable>)groupTables);
+			
+			sendSingletonMessage(mbean);
 
 		} else {
 			bean = new MessageBean();
@@ -145,7 +163,7 @@ public class ClientThread implements Runnable {
 	 * @return void
 	 */
 	private void ActionSignUp(MessageBean bean) throws IOException{
-		mbean = new MessageBean();
+		MessageBean mbean = new MessageBean();
 		System.out.println(bean.getType() + bean.getName() + bean.getPwd());
 		String sql = "insert into User values(?,?,?)";
 		String name = bean.getName().trim();
@@ -180,7 +198,7 @@ public class ClientThread implements Runnable {
 	 */
 	private void ActionSignOut(MessageBean bean) throws IOException{
 		// 告诉其他人我下线了
-		mbean = new MessageBean();
+		MessageBean mbean = new MessageBean();
 		mbean.setType(MessageType.SERVER_BROADCAST);
 		mbean.setName(bean.getName());
 		mbean.setInfo(bean.getTimer() + "  " + bean.getName() + "下线了");
@@ -193,6 +211,7 @@ public class ClientThread implements Runnable {
 	
 	private void ActionClientChar(MessageBean bean) throws IOException{
 		// 创建服务器的catbean，并发送给客户端
+		MessageBean mbean = new MessageBean();
 		mbean.setType(MessageType.CLIENT_CHAR);
 		mbean.setClients(bean.getClients());
 		mbean.setInfo(bean.getInfo());
@@ -241,7 +260,7 @@ public class ClientThread implements Runnable {
 	 */
 	private void ActionFileRequestion(MessageBean bean)throws IOException{
 		// 创建服务器的catbean，并发送给客户端
-		mbean = new MessageBean();
+		MessageBean mbean = new MessageBean();
 		String info = bean.getTimer() + "  " + bean.getName() + "向你传送文件,是否需要接受";
 
 		mbean.setType(MessageType.FILE_REQUESTION);
@@ -262,7 +281,7 @@ public class ClientThread implements Runnable {
 	 * @return void
 	 */
 	private void ActionFileReceive(MessageBean bean)throws IOException{
-		mbean = new MessageBean();
+		MessageBean mbean = new MessageBean();
 		mbean.setType(MessageType.FILE_RECEIVE);
 		mbean.setClients(bean.getClients()); // 文件来源
 		mbean.setTo(bean.getTo()); // 文件目的地
@@ -282,7 +301,7 @@ public class ClientThread implements Runnable {
 	 * @return void
 	 */
 	private void ActionFileReceiveOk(MessageBean bean)throws IOException{
-		mbean = new MessageBean();
+		MessageBean mbean = new MessageBean();
 
 		mbean.setType(MessageType.FILE_RECEIVE_OK);
 		mbean.setClients(bean.getClients()); // 文件来源\
@@ -371,6 +390,23 @@ public class ClientThread implements Runnable {
 					e.printStackTrace();
 				}
 			}
+		}
+		
+	}
+	
+	/**
+	 * @Description:// 向选中的用户发送数据
+	 * @auther: wutp 2016年10月15日
+	 * @param serverBean
+	 * @return void
+	 */
+	private void sendSingletonMessage(MessageBean mBean) {
+		try {
+			oos = new ObjectOutputStream(clientsocket.getOutputStream());
+			oos.writeObject(mBean);
+			oos.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		
 	}

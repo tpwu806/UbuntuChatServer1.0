@@ -6,7 +6,7 @@ package uc.pub.common;
  * @version 1.0
  */
 public class MessageType {
-
+	
 	/**
 	 * 登录
 	 */
@@ -88,5 +88,4 @@ public class MessageType {
 	 */
 	public static final int UPDATE_GROUP_FRIENDS = 620;
 	
-
 }
