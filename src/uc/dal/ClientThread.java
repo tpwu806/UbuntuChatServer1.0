@@ -16,6 +16,7 @@ import uc.dof.ServerJFrame;
 import uc.pub.common.GroupTable;
 import uc.pub.common.MessageBean;
 import uc.pub.common.MessageType;
+import uc.pub.common.UserInfo;
 
 /**
  * @Description: 连接客户端的线程
@@ -104,10 +105,11 @@ public class ClientThread implements Runnable {
 	}
 	
 	private void ActionUpdateGroupFriends(MessageBean bean) {
-		//List<String> groupFriends= ucService.getGroupFriends(bean.getGroupName().trim());
+		ArrayList<UserInfo> groupFriends= (ArrayList<UserInfo>) ucService.getGroupFriends(bean.getGroupName().trim());
 		MessageBean mbean = new MessageBean();
 		mbean.setType(MessageType.UPDATE_GROUP_FRIENDS);
-		//mbean.setClients(clients);((ArrayList<GroupTable>)groupTables);
+		mbean.setGroupName(bean.getGroupName());
+		mbean.setUsers(groupFriends);
 		
 		sendSingletonMessage(mbean);
 		

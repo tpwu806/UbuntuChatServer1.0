@@ -8,10 +8,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import uc.dal.dao.GroupTableDAO;
+import uc.dal.dao.UcDAO;
 import uc.dal.db.ConnectionUtil;
 import uc.dal.db.DbUtils;
 import uc.pub.common.GroupTable;
+import uc.pub.common.UserInfo;
 
 /**
  * @Description: 
@@ -70,7 +71,31 @@ public class UcService {
 			sql += "AND ug.`GNO` = gt.`GNO`;";
 			String[] params = {name};
 			rs = DbUtils.getResultSet2(conn,sql,params);
-			list =  GroupTableDAO.resultSetGroupTable(rs);
+			list =  UcDAO.resultSetGroupTable(rs);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				ConnectionUtil.BackPreparedStatement(conn,null, rs);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return list;
+	}
+
+	public List<UserInfo> getGroupFriends(String gname) {
+		List<UserInfo> list = null;
+		Connection conn = ConnectionUtil.getConnection();
+		ResultSet rs = null;
+		try {
+			String sql = "SELECT u.* FROM userinfo u, usergroup ug,grouptable gt ";
+			sql += "WHERE gt.`GNAME` = ? ";
+			sql += "AND u.`UC` = ug.`UC`";
+			sql += "AND ug.`GNO` = gt.`GNO`;";
+			String[] params = {gname};
+			rs = DbUtils.getResultSet2(conn,sql,params);
+			list =  UcDAO.resultSetUserInfo(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
