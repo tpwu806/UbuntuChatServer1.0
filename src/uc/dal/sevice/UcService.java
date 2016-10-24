@@ -29,19 +29,20 @@ public class UcService {
 	 * @return
 	 * @return boolean
 	 */
-	public boolean checkUser(String uid, String p) {
+	public boolean checkUser(String nickName, String pwd) {
 		boolean result = false;
 		int power = 0;
 		Connection conn = ConnectionUtil.getConnection();
 		ResultSet rs = null;
 		try {
 			String sql = "select 1 from USERINFO where  nickname=? and pwd=?";
-			String[] params = { uid, p };
+			String[] params = { nickName, pwd };
 			rs = DbUtils.getResultSet2(conn,sql, params);
 			if (rs.next())
 				power = rs.getInt(1);
 			if(power==1)
 				result=true;
+			changeSatus(nickName,1);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -52,6 +53,27 @@ public class UcService {
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年10月24日
+	 * @param nickName
+	 * @param status
+	 * @return void
+	 */
+	private void changeSatus(String nickName,int status){
+		String[] params = new String[2];
+		params[0] = String.valueOf(status);
+		params[1] = nickName;
+
+		Connection conn = ConnectionUtil.getConnection();
+		String sql = "UPDATE USERINFO SET STATUS = ? WHERE NICKNAME = ?";
+		try {
+			DbUtils.execute(conn,sql,params);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -83,7 +105,72 @@ public class UcService {
 		}
 		return list;
 	}
-
+	
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年10月24日
+	 * @return void
+	 */
+	public void initUserStatus(){
+		List<UserInfo> users = getAllUser();
+		UpdateUser(users);
+	}
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年10月24日
+	 * @param users
+	 * @return void
+	 */
+	private void UpdateUser(List<UserInfo> users){
+		for(UserInfo u: users){
+			Integer uc = u.getUc();
+			Connection conn = ConnectionUtil.getConnection();
+			String sql = "UPDATE USERINFO SET STATUS = 0 WHERE UC = ?";
+			String[] params = {String.valueOf(uc)};
+			try {
+				DbUtils.execute(conn,sql,params);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年10月24日
+	 * @return
+	 * @return List<UserInfo>
+	 */
+	private List<UserInfo> getAllUser() {
+		List<UserInfo> list = null;
+		Connection conn = ConnectionUtil.getConnection();
+		ResultSet rs = null;
+		try {
+			String sql = "SELECT u.* FROM userinfo u, usergroup ug,grouptable gt ";
+			sql += "WHERE 1 = ? ";
+			sql += "AND u.`UC` = ug.`UC`";
+			sql += "AND ug.`GNO` = gt.`GNO`;";
+			String[] params = {"1"};
+			rs = DbUtils.getResultSet2(conn,sql,params);
+			list =  UcDAO.resultSetUserInfo(rs);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				ConnectionUtil.BackPreparedStatement(conn,null, rs);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return list;
+	}
+	
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年10月24日
+	 * @param gname
+	 * @return
+	 * @return List<UserInfo>
+	 */
 	public List<UserInfo> getGroupFriends(String gname) {
 		List<UserInfo> list = null;
 		Connection conn = ConnectionUtil.getConnection();

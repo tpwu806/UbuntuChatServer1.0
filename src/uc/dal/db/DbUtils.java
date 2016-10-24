@@ -253,7 +253,7 @@ public class DbUtils {
 	 * @return boolean
 	 * @throws SQLException 
 	 */
-	public static boolean execute(String sql,String []params) throws SQLException
+	public static boolean execute(Connection conn,String sql,String []params) throws SQLException
 	{
 		boolean confInfo = false;
 		try {

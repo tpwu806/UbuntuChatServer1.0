@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
+import uc.dal.sevice.UcService;
 import uc.dof.ServerJFrame;
 import uc.pub.common.MessageBean;
 import uc.pub.common.MessageType;
@@ -38,6 +39,7 @@ public class ServerServer implements Runnable{
 
 	public ServerServer(ServerJFrame AppWindow) {
 		this.AppWindow = AppWindow;
+		initUserStatus();
 	}
 
 	// 返回当前在线的人的线程
@@ -95,6 +97,16 @@ public class ServerServer implements Runnable{
 		ServerServer.signinThreads.remove(id);
 		broadcast(id + " " + " 被服务器管理员强制下线了");
 		this.AppWindow.delList(id);
+	}
+	
+	/**
+	 * @Description:初始化用户在线状态
+	 * @auther: wutp 2016年10月24日
+	 * @return void
+	 */
+	private void initUserStatus(){
+		UcService UcService = new UcService();
+		UcService.initUserStatus();
 	}
 
 	@Override
