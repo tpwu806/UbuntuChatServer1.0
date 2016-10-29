@@ -146,8 +146,23 @@ public class ServerJFrame extends JFrame implements ActionListener, ListSelectio
 		this.setSize(800, 500);
 		// this.setIconImage(titleIcon);
 		this.setTitle("UbuntuChatServer");
+		toCenter();
 	}
-
+	
+	/**
+	 * @Description:居中显示
+	 * @auther: wutp 2016年10月17日
+	 * @return void
+	 */
+	private void toCenter() {// 居中显示
+		Toolkit kit = Toolkit.getDefaultToolkit();
+		Dimension screenSize = kit.getScreenSize();
+		int screenWidth = screenSize.width / 2;
+		int screenHeight = screenSize.height / 2;
+		int height = this.getHeight();
+		int width = this.getWidth();
+		this.setLocation(screenWidth - width / 2, screenHeight - height / 2);
+	}
 	/**
 	 * @Description:
 	 * @auther: wutp 2016年10月13日

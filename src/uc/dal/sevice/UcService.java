@@ -3,16 +3,15 @@ package uc.dal.sevice;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import uc.dal.dao.UcDAO;
 import uc.dal.db.ConnectionUtil;
 import uc.dal.db.DbUtils;
-import uc.pub.common.GroupTable;
-import uc.pub.common.UserInfo;
+import uc.pub.common.MessageType;
+import uc.pub.common.domain.GroupTable;
+import uc.pub.common.domain.UserInfo;
 
 /**
  * @Description: 
@@ -29,19 +28,21 @@ public class UcService {
 	 * @return
 	 * @return boolean
 	 */
-	public boolean checkUser(String nickName, String pwd) {
-		boolean result = false;
-		int power = 0;
+	public String checkUser(String nickName, String pwd) {
+		String result = "登录失败！";
+		int power = -1;
 		Connection conn = ConnectionUtil.getConnection();
 		ResultSet rs = null;
 		try {
-			String sql = "select 1 from USERINFO where  nickname=? and pwd=?";
+			String sql = "select STATUS from USERINFO where  nickname=? and pwd=?";
 			String[] params = { nickName, pwd };
 			rs = DbUtils.getResultSet2(conn,sql, params);
 			if (rs.next())
 				power = rs.getInt(1);
-			if(power==1)
-				result=true;
+			if(power == 1)
+				result = "已经登陆，不允许重复登录！";
+			else if(power == 0)
+				result = MessageType.SIGN_IN_SUCCESS;
 			changeSatus(nickName,1);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -82,8 +83,8 @@ public class UcService {
 	 * @param name
 	 * @return void
 	 */
-	public static List<GroupTable> getGroupTable(String name) {
-		List<GroupTable> list = null;
+	public static Set<GroupTable> getGroupTable(String name) {
+		Set<GroupTable> set = null;
 		Connection conn = ConnectionUtil.getConnection();
 		ResultSet rs = null;
 		try {
@@ -93,7 +94,7 @@ public class UcService {
 			sql += "AND ug.`GNO` = gt.`GNO`;";
 			String[] params = {name};
 			rs = DbUtils.getResultSet2(conn,sql,params);
-			list =  UcDAO.resultSetGroupTable(rs);
+			set =  UcDAO.resultSetGroupTable(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -103,7 +104,7 @@ public class UcService {
 				e.printStackTrace();
 			}
 		}
-		return list;
+		return set;
 	}
 	
 	/**
@@ -112,7 +113,7 @@ public class UcService {
 	 * @return void
 	 */
 	public void initUserStatus(){
-		List<UserInfo> users = getAllUser();
+		Set<UserInfo> users = getAllUser();
 		UpdateUser(users);
 	}
 	/**
@@ -121,7 +122,7 @@ public class UcService {
 	 * @param users
 	 * @return void
 	 */
-	private void UpdateUser(List<UserInfo> users){
+	private void UpdateUser(Set<UserInfo> users){
 		for(UserInfo u: users){
 			Integer uc = u.getUc();
 			Connection conn = ConnectionUtil.getConnection();
@@ -140,8 +141,8 @@ public class UcService {
 	 * @return
 	 * @return List<UserInfo>
 	 */
-	private List<UserInfo> getAllUser() {
-		List<UserInfo> list = null;
+	private Set<UserInfo> getAllUser() {
+		Set<UserInfo> set = null;
 		Connection conn = ConnectionUtil.getConnection();
 		ResultSet rs = null;
 		try {
@@ -151,7 +152,7 @@ public class UcService {
 			sql += "AND ug.`GNO` = gt.`GNO`;";
 			String[] params = {"1"};
 			rs = DbUtils.getResultSet2(conn,sql,params);
-			list =  UcDAO.resultSetUserInfo(rs);
+			set =  UcDAO.resultSetUserInfos(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -161,7 +162,7 @@ public class UcService {
 				e.printStackTrace();
 			}
 		}
-		return list;
+		return set;
 	}
 	
 	/**
@@ -171,8 +172,8 @@ public class UcService {
 	 * @return
 	 * @return List<UserInfo>
 	 */
-	public List<UserInfo> getGroupFriends(String gname) {
-		List<UserInfo> list = null;
+	public Set<UserInfo> getGroupFriends(String gname) {
+		Set<UserInfo> set = null;
 		Connection conn = ConnectionUtil.getConnection();
 		ResultSet rs = null;
 		try {
@@ -182,7 +183,7 @@ public class UcService {
 			sql += "AND ug.`GNO` = gt.`GNO`;";
 			String[] params = {gname};
 			rs = DbUtils.getResultSet2(conn,sql,params);
-			list =  UcDAO.resultSetUserInfo(rs);
+			set =  UcDAO.resultSetUserInfos(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -192,28 +193,28 @@ public class UcService {
 				e.printStackTrace();
 			}
 		}
-		return list;
+		return set;
 	}
 
-	public static void main(String[] args){
-		System.out.println("JJJJJJJJJJJJJJ");
-		//getGroupTable("system1");
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年10月28日
+	 * @param name
+	 * @return
+	 * @return Set<UserInfo>
+	 */
+	public static Set<UserInfo> getUserInfos(String name) {
+		UserInfo u = getUserInfo(name);
+		Set<UserInfo> set = null;
 		Connection conn = ConnectionUtil.getConnection();
 		ResultSet rs = null;
-		String uc = null;
 		try {
-			String sql = "select UC from USERINFO where  nickname=? ";
-			String[] params = {"system1"};
-			rs = DbUtils.getResultSet2(conn,sql, params);
-			if (rs.next())
-				uc = rs.getString(1);
-			System.out.println(uc);
-			
-			sql = "select * from USERGROUP where UC = ?";
-			params = new String[1];
-			params[0] = uc;
-			rs = DbUtils.getResultSet2(conn,sql, params);
-			DbUtils.resultSetToList(rs);
+			String sql = "SELECT u.* FROM userinfo u, friends f ";
+			sql += "WHERE f.`UC` = ? ";
+			sql += "AND u.`UC` = f.`FUC`;";
+			String[] params = {String.valueOf(u.getUc())};
+			rs = DbUtils.getResultSet2(conn,sql,params);
+			set =  UcDAO.resultSetUserInfos(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -222,6 +223,42 @@ public class UcService {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+		}
+		return set;
+	}
+	
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年10月28日
+	 * @param name
+	 * @return
+	 * @return Set<UserInfo>
+	 */
+	private static UserInfo getUserInfo(String name) {
+		UserInfo u = null;
+		Connection conn = ConnectionUtil.getConnection();
+		ResultSet rs = null;
+		try {
+			String sql = "SELECT * FROM userinfo WHERE `NICKNAME` = ? ";			
+			String[] params = {name};
+			rs = DbUtils.getResultSet2(conn,sql,params);
+			u =  UcDAO.resultSetUserInfo(rs);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				ConnectionUtil.BackPreparedStatement(conn,null, rs);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return u;
+	}
+
+	public static void main(String[] args) {
+		Set<UserInfo> set = getUserInfos("system1");
+		for(UserInfo u : set){
+			System.out.println(u.getUc());
 		}
 	}
 

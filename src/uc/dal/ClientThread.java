@@ -4,19 +4,18 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import uc.dal.sevice.TableModel;
 import uc.dal.sevice.UcService;
 import uc.dof.ServerJFrame;
-import uc.pub.common.GroupTable;
 import uc.pub.common.MessageBean;
 import uc.pub.common.MessageType;
-import uc.pub.common.UserInfo;
+import uc.pub.common.domain.GroupTable;
+import uc.pub.common.domain.UserInfo;
 
 /**
  * @Description: 连接客户端的线程
@@ -26,6 +25,7 @@ import uc.pub.common.UserInfo;
 public class ClientThread implements Runnable {
 
 	public Socket clientsocket;
+
 	private MessageBean bean;
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
@@ -46,7 +46,7 @@ public class ClientThread implements Runnable {
 			while (running) {
 				ois = new ObjectInputStream(clientsocket.getInputStream());								
 				bean = (MessageBean) ois.readObject();
-				
+				System.out.println("ServerSocket Type: "+bean.getType());
 				switch (bean.getType()) {
 				// 登录
 				case MessageType.SIGN_IN: {
@@ -63,9 +63,9 @@ public class ClientThread implements Runnable {
 					ActionSignOut(bean);
 					//return;
 				}
-				// 聊天
-				case MessageType.CLIENT_CHAR: { 
-					ActionClientChar(bean);
+				// 群聊天
+				case MessageType.GROUP_CHAT: { 
+					ActionGroupChat(bean);
 					break;
 				}
 				// 请求接受文件
@@ -84,11 +84,12 @@ public class ClientThread implements Runnable {
 					break;
 				}
 				// 一对一聊天
-				case MessageType.SINGLETON_CHAR: { 					
-					ActionSingletonChar(bean);					
+				case MessageType.SINGLETON_CHAT: { 					
+					ActionSingletonChat(bean);					
 					break;
 				}
-				case MessageType.UPDATE_GROUP_FRIENDS: {
+				// 更新群好友
+				case MessageType.GET_GROUP_FRIEND_LIST: {
 					ActionUpdateGroupFriends(bean);
 					break;
 				}
@@ -104,17 +105,6 @@ public class ClientThread implements Runnable {
 		}
 	}
 	
-	private void ActionUpdateGroupFriends(MessageBean bean) {
-		ArrayList<UserInfo> groupFriends= (ArrayList<UserInfo>) ucService.getGroupFriends(bean.getGroupName().trim());
-		MessageBean mbean = new MessageBean();
-		mbean.setType(MessageType.UPDATE_GROUP_FRIENDS);
-		mbean.setGroupName(bean.getGroupName());
-		mbean.setUsers(groupFriends);
-		
-		sendSingletonMessage(mbean);
-		
-	}
-
 	/**
 	 * @Description:
 	 * @auther: wutp 2016年10月22日
@@ -126,7 +116,8 @@ public class ClientThread implements Runnable {
 		System.out.println(bean.getType() + ":" + bean.getName() + bean.getPwd());
 		mbean = new MessageBean();
 		
-		if (ucService.checkUser(bean.getName().trim(), bean.getPwd().trim())) {
+		String result = ucService.checkUser(bean.getName().trim(), bean.getPwd().trim());
+		if (result.equals(MessageType.SIGN_IN_SUCCESS)) {
 			System.out.println("sql验证成功");
 			//发送登录成功消息，更新后台在线列表
 			mbean.setType(MessageType.SIGN_IN_SUCCESS);
@@ -134,21 +125,31 @@ public class ClientThread implements Runnable {
 
 			ServerServer.signinThreads.put(bean.getName(), this);
 			AppWindow.AddList(bean.getName());
-			
-			// 告诉其他人我上线了
-			updateFriendsList(bean.getName());
-			
+
 			//更新群信息
-			List<GroupTable> groupTables= ucService.getGroupTable(bean.getName().trim());
+			Set<GroupTable> groupTables= UcService.getGroupTable(bean.getName().trim());
 			mbean = new MessageBean();
-			mbean.setType(MessageType.UPDATE_GROUP);
-			mbean.setGroups((ArrayList<GroupTable>)groupTables);
+			mbean.setType(MessageType.GET_GROUP_LIST);
+			mbean.setGroups((HashSet<GroupTable>)groupTables);
+			Set<UserInfo> fUsers= (Set<UserInfo>) UcService.getUserInfos(bean.getName().trim());
+			mbean.setUsers((HashSet<UserInfo>)fUsers);
 			
 			sendSingletonMessage(mbean);
 
+			// 告诉其他人我上线了
+			Set<UserInfo> allUsers = new HashSet<>();
+			allUsers.addAll(fUsers);
+			for(GroupTable g : groupTables){
+				HashSet<UserInfo> groupFriends= (HashSet<UserInfo>) 
+						ucService.getGroupFriends(g.getGname().trim());
+				allUsers.addAll(groupFriends);
+			}
+			allUsers.remove(bean.getName());
+			updateFriendsList(allUsers,bean.getName());
 		} else {
-			bean = new MessageBean();
-			bean.setType(MessageType.SIGN_IN_FALSE);
+			mbean = new MessageBean();
+			mbean.setType(MessageType.SIGN_IN_FALSE);
+			mbean.setErrorMessage(result);
 			oos = new ObjectOutputStream(clientsocket.getOutputStream());
 			oos.writeObject(mbean);
 			oos.flush();
@@ -211,13 +212,14 @@ public class ClientThread implements Runnable {
 		this.running=false;
 	}
 	
-	private void ActionClientChar(MessageBean bean) throws IOException{
+	private void ActionGroupChat(MessageBean bean) throws IOException{
 		// 创建服务器的catbean，并发送给客户端
 		MessageBean mbean = new MessageBean();
-		mbean.setType(MessageType.CLIENT_CHAR);
+		mbean.setType(MessageType.GROUP_CHAT);		
 		mbean.setClients(bean.getClients());
 		mbean.setInfo(bean.getInfo());
 		mbean.setName(bean.getName());
+		mbean.setGroupName(bean.getGroupName());
 		mbean.setTimer(bean.getTimer());
 		// 向选中的客户发送数据
 		sendMessage(mbean);
@@ -228,7 +230,7 @@ public class ClientThread implements Runnable {
 	 * @param serverBean
 	 * @return void
 	 */
-	private void ActionSingletonChar(MessageBean bean)throws IOException{
+	private void ActionSingletonChat(MessageBean bean)throws IOException{
 		ObjectOutputStream oos;
 		MessageBean serverBean;
 		try {		
@@ -237,7 +239,7 @@ public class ClientThread implements Runnable {
 			Socket c = ServerServer.signinThreads.get(bean.getFriendName()).clientsocket;	
 			
 			serverBean = new MessageBean();
-			serverBean.setType(MessageType.SINGLETON_CHAR);
+			serverBean.setType(MessageType.SINGLETON_CHAT);
 			serverBean.setName(bean.getName());
 			serverBean.setFriendName(bean.getFriendName());
 			serverBean.setTimer(bean.getTimer());
@@ -316,18 +318,34 @@ public class ClientThread implements Runnable {
 
 	}
 
+	private void ActionUpdateGroupFriends(MessageBean bean) {
+		HashSet<UserInfo> groupFriends= (HashSet<UserInfo>) ucService.getGroupFriends(bean.getGroupName().trim());
+		MessageBean mbean = new MessageBean();
+		mbean.setType(MessageType.GET_GROUP_FRIEND_LIST);
+		mbean.setGroupName(bean.getGroupName());
+		mbean.setUsers(groupFriends);
+		
+		sendSingletonMessage(mbean);
+		
+	}
+
 	/**
 	 * @Description:更新好友列表
 	 * @auther: wutp 2016年10月15日
 	 * @return void
 	 */
-	private void updateFriendsList(String name){
+	private void updateFriendsList(Set<UserInfo> allUsers,String name){
 		//首先取得所有的在线用户
-		HashSet<String> hs = new HashSet<>();		
-		hs.addAll(ServerServer.signinThreads.keySet());
+		HashSet<String> hs = new HashSet<>();
+		for(UserInfo u : allUsers){
+			hs.add(u.getNickName());
+		}
+		hs.remove(name);
 		MessageBean serverBean = new MessageBean();
 		serverBean.setType(MessageType.SERVER_UPDATE_FRIENDS);
 		serverBean.setClients(hs);
+		serverBean.setName(name);
+		//serverBean.setUsers((HashSet<UserInfo>)allUsers);
 		
 		sendMessage(serverBean);
 	}

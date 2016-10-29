@@ -3,40 +3,39 @@ package uc.dal.dao;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-import uc.pub.common.GroupTable;
-import uc.pub.common.UserInfo;
+import uc.pub.common.domain.GroupTable;
+import uc.pub.common.domain.UserInfo;
 
 public class UcDAO {
 	
-	public static List<GroupTable> resultSetGroupTable(ResultSet rs) {
-		List<GroupTable> list = new ArrayList<>();
+	public static Set<GroupTable> resultSetGroupTable(ResultSet rs) {
+		Set<GroupTable> Set = new HashSet<>();
 		GroupTable g = null;
 		if (rs == null)
-			return Collections.emptyList();
+			return null;
 		try {
 			while (rs.next()) {
 				g = new GroupTable();
 				g.setGno(rs.getInt("GNO"));
 				g.setGname(rs.getString("GNAME").trim());
 				g.setGdate(rs.getTimestamp("GDATE"));
-				list.add(g);		
+				Set.add(g);		
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} 		
-		System.out.println("list:" + list.toString());
-		return list;
+		//System.out.println("list:" + list.toString());
+		return Set;
 	}
 
-	public static List<UserInfo> resultSetUserInfo(ResultSet rs) {
-		List<UserInfo> list = new ArrayList<>();
+	public static Set<UserInfo> resultSetUserInfos(ResultSet rs) {
+		Set<UserInfo> set = new HashSet<>();
 		UserInfo g = null;
 		if (rs == null)
-			return Collections.emptyList();
+			return null;
 		try {
 			while (rs.next()) {
 				g = new UserInfo();
@@ -44,12 +43,31 @@ public class UcDAO {
 				g.setNickName(rs.getString("NICKNAME"));
 				g.setStatus(rs.getString("STATUS"));
 				
-				list.add(g);		
+				set.add(g);		
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} 		
-		System.out.println("list:" + list.toString());
-		return list;
+		//System.out.println("list:" + list.toString());
+		return set;
+	}
+	
+	public static UserInfo resultSetUserInfo(ResultSet rs) {
+		UserInfo u = null;
+		if (rs == null)
+			return null;
+		try {
+			while (rs.next()) {
+				u = new UserInfo();
+				u.setUc(rs.getInt("UC"));
+				u.setNickName(rs.getString("NICKNAME"));
+				u.setStatus(rs.getString("STATUS"));
+					
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} 		
+		//System.out.println("list:" + list.toString());
+		return u;
 	}
 }
