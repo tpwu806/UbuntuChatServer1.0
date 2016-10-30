@@ -6,8 +6,8 @@ import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
 
-import uc.pub.common.domain.GroupTable;
-import uc.pub.common.domain.UserInfo;
+import uc.common.domain.GroupTable;
+import uc.common.domain.UserInfo;
 
 public class UcDAO {
 	

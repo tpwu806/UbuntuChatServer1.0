@@ -6,12 +6,12 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
+import uc.common.MessageType;
+import uc.common.domain.GroupTable;
+import uc.common.domain.UserInfo;
 import uc.dal.dao.UcDAO;
 import uc.dal.db.ConnectionUtil;
 import uc.dal.db.DbUtils;
-import uc.pub.common.MessageType;
-import uc.pub.common.domain.GroupTable;
-import uc.pub.common.domain.UserInfo;
 
 /**
  * @Description: 

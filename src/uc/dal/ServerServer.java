@@ -8,10 +8,10 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
+import uc.common.MessageBean;
+import uc.common.MessageType;
 import uc.dal.sevice.UcService;
 import uc.dof.ServerJFrame;
-import uc.pub.common.MessageBean;
-import uc.pub.common.MessageType;
 
 /**
  * @Description: 服务器后台
