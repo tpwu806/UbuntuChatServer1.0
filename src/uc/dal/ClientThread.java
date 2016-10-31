@@ -112,15 +112,17 @@ public class ClientThread implements Runnable {
 	 * @throws IOException 
 	 */
 	private void ActionSignIn(MessageBean bean) throws IOException{
-		MessageBean mbean;
-		System.out.println(bean.getType() + ":" + bean.getName() + bean.getPwd());
-		mbean = new MessageBean();
+		MessageBean mbean = new MessageBean();
+		System.out.println(bean.getType() + ":" + bean.getUser().getUc() + bean.getUser().getPwd());
 		
-		String result = ucService.checkUser(bean.getName().trim(), bean.getPwd().trim());
-		if (result.equals(MessageType.SIGN_IN_SUCCESS)) {
+		
+		UserInfo su = ucService.checkUser(bean.getUser());
+		if (su!=null && !"1".equals(su.getStatus())) {
 			System.out.println("sql验证成功");
+			bean.setName(su.getNickName());
 			//发送登录成功消息，更新后台在线列表
 			mbean.setType(MessageType.SIGN_IN_SUCCESS);
+			mbean.setUser(su);
 			sendSingletonMessage(mbean);
 
 			ServerServer.signinThreads.put(bean.getName(), this);
@@ -149,7 +151,9 @@ public class ClientThread implements Runnable {
 		} else {
 			mbean = new MessageBean();
 			mbean.setType(MessageType.SIGN_IN_FALSE);
-			mbean.setErrorMessage(result);
+			if("1".equals(su.getStatus())){
+				mbean.setErrorMessage("已经登陆，不允许重复登录！");
+			}
 			oos = new ObjectOutputStream(clientsocket.getOutputStream());
 			oos.writeObject(mbean);
 			oos.flush();

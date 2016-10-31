@@ -28,22 +28,17 @@ public class UcService {
 	 * @return
 	 * @return boolean
 	 */
-	public String checkUser(String nickName, String pwd) {
-		String result = "登录失败！";
-		int power = -1;
+	public UserInfo checkUser(UserInfo user) {
+		UserInfo suser = new UserInfo();
+		
 		Connection conn = ConnectionUtil.getConnection();
 		ResultSet rs = null;
 		try {
-			String sql = "select STATUS from USERINFO where  nickname=? and pwd=?";
-			String[] params = { nickName, pwd };
-			rs = DbUtils.getResultSet2(conn,sql, params);
-			if (rs.next())
-				power = rs.getInt(1);
-			if(power == 1)
-				result = "已经登陆，不允许重复登录！";
-			else if(power == 0)
-				result = MessageType.SIGN_IN_SUCCESS;
-			changeSatus(nickName,1);
+			String sql = "select * from USERINFO where  uc=? and pwd=?";
+			String[] params = { user.getUc().toString().trim(), user.getPwd().trim() };
+			rs = DbUtils.getResultSet2(conn,sql,params);
+			suser =  UcDAO.resultSetUserInfo(rs);
+			changeSatus(suser.getNickName().trim(),1);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -53,7 +48,7 @@ public class UcService {
 				e.printStackTrace();
 			}
 		}
-		return result;
+		return suser;
 	}
 	
 	/**
