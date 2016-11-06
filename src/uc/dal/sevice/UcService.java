@@ -1,17 +1,15 @@
 package uc.dal.sevice;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.Set;
 
-import uc.common.MessageType;
+import uc.common.domain.Friends;
 import uc.common.domain.GroupTable;
+import uc.common.domain.SubGroup;
 import uc.common.domain.UserInfo;
-import uc.dal.dao.UcDAO;
-import uc.dal.db.ConnectionUtil;
-import uc.dal.db.DbUtils;
+import uc.common.dto.UserInformation;
+import uc.dal.dao.GroupTableDAO;
+import uc.dal.dao.SubGroupDAO;
+import uc.dal.dao.UserInfoDAO;
 
 /**
  * @Description: 
@@ -21,237 +19,95 @@ import uc.dal.db.DbUtils;
 public class UcService {
 
 	/**
-	 * @Description:
+	 * @Description:登录验证
 	 * @auther: wutp 2016年10月23日
-	 * @param uid
-	 * @param p
+	 * @param user
 	 * @return
-	 * @return boolean
+	 * @return UserInfo
 	 */
 	public UserInfo checkUser(UserInfo user) {
-		UserInfo suser = new UserInfo();
-		
-		Connection conn = ConnectionUtil.getConnection();
-		ResultSet rs = null;
-		try {
-			String sql = "select * from USERINFO where  uc=? and pwd=?";
-			String[] params = { user.getUc().toString().trim(), user.getPwd().trim() };
-			rs = DbUtils.getResultSet2(conn,sql,params);
-			suser =  UcDAO.resultSetUserInfo(rs);
-			changeSatus(suser.getNickName().trim(),1);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				ConnectionUtil.BackPreparedStatement(conn,null, rs);
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
+		UserInfo suser = null;
+		suser = UserInfoDAO.getUserInfoByUcAndPwd(
+				user.getUc().toString().trim(), user.getPwd().trim());
+		if(user!=null&& "0".equals(user.getStatus().trim()))
+			UserInfoDAO.UpdateSatusByNickNameAndStatus(
+					suser.getNickname().trim(),1);
 		return suser;
 	}
 	
-	/**
-	 * @Description:
-	 * @auther: wutp 2016年10月24日
-	 * @param nickName
-	 * @param status
-	 * @return void
-	 */
-	private void changeSatus(String nickName,int status){
-		String[] params = new String[2];
-		params[0] = String.valueOf(status);
-		params[1] = nickName;
-
-		Connection conn = ConnectionUtil.getConnection();
-		String sql = "UPDATE USERINFO SET STATUS = ? WHERE NICKNAME = ?";
-		try {
-			DbUtils.execute(conn,sql,params);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * @Description:
-	 * @auther: wutp 2016年10月23日
-	 * @param name
-	 * @return void
-	 */
-	public static Set<GroupTable> getGroupTable(String name) {
-		Set<GroupTable> set = null;
-		Connection conn = ConnectionUtil.getConnection();
-		ResultSet rs = null;
-		try {
-			String sql = "SELECT gt.* FROM userinfo u, usergroup ug,grouptable gt ";
-			sql += "WHERE u.`NICKNAME` = ? ";
-			sql += "AND u.`UC` = ug.`UC`";
-			sql += "AND ug.`GNO` = gt.`GNO`;";
-			String[] params = {name};
-			rs = DbUtils.getResultSet2(conn,sql,params);
-			set =  UcDAO.resultSetGroupTable(rs);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				ConnectionUtil.BackPreparedStatement(conn,null, rs);
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		return set;
-	}
 	
+
 	/**
-	 * @Description:
+	 * @Description:系统启动时，将所有用户状态设为离线
 	 * @auther: wutp 2016年10月24日
 	 * @return void
 	 */
 	public void initUserStatus(){
-		Set<UserInfo> users = getAllUser();
-		UpdateUser(users);
-	}
-	/**
-	 * @Description:
-	 * @auther: wutp 2016年10月24日
-	 * @param users
-	 * @return void
-	 */
-	private void UpdateUser(Set<UserInfo> users){
+		Set<UserInfo> users = UserInfoDAO.getAllUser();
 		for(UserInfo u: users){
 			Integer uc = u.getUc();
-			Connection conn = ConnectionUtil.getConnection();
-			String sql = "UPDATE USERINFO SET STATUS = 0 WHERE UC = ?";
-			String[] params = {String.valueOf(uc)};
-			try {
-				DbUtils.execute(conn,sql,params);
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			int status = 0;
+			UserInfoDAO.UpdateSatusByUcAndStatus(uc,status);
 		}
-	}
-	/**
-	 * @Description:
-	 * @auther: wutp 2016年10月24日
-	 * @return
-	 * @return List<UserInfo>
-	 */
-	private Set<UserInfo> getAllUser() {
-		Set<UserInfo> set = null;
-		Connection conn = ConnectionUtil.getConnection();
-		ResultSet rs = null;
-		try {
-			String sql = "SELECT u.* FROM userinfo u, usergroup ug,grouptable gt ";
-			sql += "WHERE 1 = ? ";
-			sql += "AND u.`UC` = ug.`UC`";
-			sql += "AND ug.`GNO` = gt.`GNO`;";
-			String[] params = {"1"};
-			rs = DbUtils.getResultSet2(conn,sql,params);
-			set =  UcDAO.resultSetUserInfos(rs);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				ConnectionUtil.BackPreparedStatement(conn,null, rs);
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		return set;
 	}
 	
 	/**
-	 * @Description:
+	 * @Description:根据用户昵称获取所有群信息
+	 * @auther: wutp 2016年10月23日
+	 * @param name
+	 * @return
+	 * @return Set<GroupTable>
+	 */
+	public static Set<GroupTable> getGroupTableByNickName(String nickname) {
+		return GroupTableDAO.getGroupTableByNickName(nickname);
+	}
+
+
+
+	/**
+	 * @Description:根据群名称获取群用户信息
 	 * @auther: wutp 2016年10月24日
 	 * @param gname
 	 * @return
 	 * @return List<UserInfo>
 	 */
-	public Set<UserInfo> getGroupFriends(String gname) {
-		Set<UserInfo> set = null;
-		Connection conn = ConnectionUtil.getConnection();
-		ResultSet rs = null;
-		try {
-			String sql = "SELECT u.* FROM userinfo u, usergroup ug,grouptable gt ";
-			sql += "WHERE gt.`GNAME` = ? ";
-			sql += "AND u.`UC` = ug.`UC`";
-			sql += "AND ug.`GNO` = gt.`GNO`;";
-			String[] params = {gname};
-			rs = DbUtils.getResultSet2(conn,sql,params);
-			set =  UcDAO.resultSetUserInfos(rs);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				ConnectionUtil.BackPreparedStatement(conn,null, rs);
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		return set;
+	public Set<UserInfo> getGroupUserInfoByGname(String gname) {
+	
+		return UserInfoDAO.getGroupUserInfoByGname(gname);
 	}
 
 	/**
-	 * @Description:
+	 * @Description:根据用户名称获取好友信息
 	 * @auther: wutp 2016年10月28日
 	 * @param name
 	 * @return
 	 * @return Set<UserInfo>
 	 */
-	public static Set<UserInfo> getUserInfos(String name) {
-		UserInfo u = getUserInfo(name);
+	public static Set<UserInfo> getAllFriendsUserInfoByNickName(String name) {
+		UserInfo u = UserInfoDAO.getUserInfoByNickName(name);
 		Set<UserInfo> set = null;
-		Connection conn = ConnectionUtil.getConnection();
-		ResultSet rs = null;
-		try {
-			String sql = "SELECT u.* FROM userinfo u, friends f ";
-			sql += "WHERE f.`UC` = ? ";
-			sql += "AND u.`UC` = f.`FUC`;";
-			String[] params = {String.valueOf(u.getUc())};
-			rs = DbUtils.getResultSet2(conn,sql,params);
-			set =  UcDAO.resultSetUserInfos(rs);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				ConnectionUtil.BackPreparedStatement(conn,null, rs);
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
+		set = UserInfoDAO.getAllFriendsUserInfoByUc(u.getUc());
 		return set;
 	}
 	
+	
+	
 	/**
-	 * @Description:
-	 * @auther: wutp 2016年10月28日
+	 * @Description:根据用户昵称获取所有好友分组信息
+	 * @auther: wutp 2016年11月6日
 	 * @param name
 	 * @return
-	 * @return Set<UserInfo>
+	 * @return Set<GroupTable>
 	 */
-	private static UserInfo getUserInfo(String name) {
-		UserInfo u = null;
-		Connection conn = ConnectionUtil.getConnection();
-		ResultSet rs = null;
-		try {
-			String sql = "SELECT * FROM userinfo WHERE `NICKNAME` = ? ";			
-			String[] params = {name};
-			rs = DbUtils.getResultSet2(conn,sql,params);
-			u =  UcDAO.resultSetUserInfo(rs);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				ConnectionUtil.BackPreparedStatement(conn,null, rs);
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		return u;
+	public static UserInformation getUserInformationByNickName(String nickname) {
+		UserInformation userInformation = null;
+		UserInfo u = UserInfoDAO.getUserInfoByNickName(nickname);
+		Set<SubGroup> subGroups = SubGroupDAO.getSubGroupByUc(u.getUc());
+		return userInformation;
 	}
 
 	public static void main(String[] args) {
-		Set<UserInfo> set = getUserInfos("system1");
+		Set<UserInfo> set = getAllFriendsUserInfoByNickName("system1");
 		for(UserInfo u : set){
 			System.out.println(u.getUc());
 		}
