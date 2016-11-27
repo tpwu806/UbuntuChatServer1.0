@@ -39,6 +39,35 @@ public class UserInfoDAO {
 	}
 	
 	/**
+	 * @Description:
+	 * @auther: wutp 2016年11月27日
+	 * @param uc
+	 * @return
+	 * @return UserInfo
+	 */
+	public static UserInfo getUserInfoByUc(String uc) {
+		UserInfo u = null;
+		Connection conn = ConnectionUtil.getConnection();
+		ResultSet rs = null;
+		try {
+			String sql = "SELECT * FROM userinfo WHERE uc = ? ";			
+			String[] params = {uc};
+			rs = DbUtils.getResultSet2(conn,sql,params);
+			if(rs.next())
+				u = new UserInfo();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				ConnectionUtil.BackPreparedStatement(conn,null, rs);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return u;
+	}
+
+	/**
 	 * @Description:根据昵称获取用户信息
 	 * @param name
 	 * @return
@@ -108,7 +137,26 @@ public class UserInfoDAO {
 	}
 	
 	/**
-	 * @Description:
+	 * @Description:初始化登录状态
+	 * @auther: wutp 2016年11月27日
+	 * @return void
+	 */
+	public static void UpdateSatus() {
+		String[] params = new String[1];
+		params[0] = "0";
+
+		Connection conn = ConnectionUtil.getConnection();
+		String sql = "UPDATE USERINFO SET STATUS = ? ";
+		try {
+			DbUtils.execute(conn,sql,params);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	/**
+	 * @Description:得到所有用户 
 	 * @auther: wutp 2016年10月24日
 	 * @return
 	 * @return List<UserInfo>

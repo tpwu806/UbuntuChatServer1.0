@@ -121,4 +121,35 @@ public class TableToDomain {
 		//System.out.println("list:" + list.toString());
 		return Set;
 	}
+
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年11月27日
+	 * @param rs
+	 * @return
+	 * @return Set<Friends>
+	 */
+	public static Set<Friends> resultSetToFriends(ResultSet rs) {
+		Set<Friends> Set = new HashSet<>();
+		Friends friend = null;
+		if (rs == null)
+			return null;
+		try {
+			while (rs.next()) {
+				friend = new Friends();
+				friend.setFdate(rs.getTimestamp("FDATE"));
+				friend.setRemarks(rs.getString("REMARKS"));
+				friend.setFuc(rs.getInt("FUC"));
+				friend.setSign(rs.getString("SIGN"));
+				friend.setPhotoid(rs.getString("PHOTOID"));
+				friend.setNickname(rs.getString("NICKNAME"));
+				friend.setStatus(rs.getString("status"));
+				
+				Set.add(friend);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return Set;
+	}
 }

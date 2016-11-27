@@ -106,7 +106,7 @@ public class ServerServer implements Runnable{
 	 */
 	private void initUserStatus(){
 		UcService UcService = new UcService();
-		UcService.initUserStatus();
+		UcService.initUserStatus2();
 	}
 
 	@Override

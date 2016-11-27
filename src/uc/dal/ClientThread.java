@@ -1,17 +1,21 @@
 package uc.dal;
 
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Collection;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 import uc.common.MessageBean;
 import uc.common.MessageType;
+import uc.common.User;
+import uc.common.UserInformation;
 import uc.common.domain.GroupTable;
+import uc.common.domain.ResultObject;
 import uc.common.domain.UserInfo;
 import uc.dal.sevice.TableModel;
 import uc.dal.sevice.UcService;
@@ -31,7 +35,7 @@ public class ClientThread implements Runnable {
 	private ObjectOutputStream oos;
 	private ServerJFrame AppWindow;
 	private UcService ucService ; 
-
+	
 	public ClientThread(Socket socket, ServerJFrame AppWindow) {
 		this.clientsocket = socket;
 		this.AppWindow = AppWindow;
@@ -127,7 +131,8 @@ public class ClientThread implements Runnable {
 		System.out.println(bean.getType() + ":" + bean.getUser().getUc() + bean.getUser().getPwd());
 		
 		
-		UserInfo su = ucService.checkUser(bean.getUser());
+		//UserInfo su = ucService.checkUser(bean.getUser());
+		UserInfo su = null;
 		if (su!=null && !"1".equals(su.getStatus())) {
 			System.out.println("sql验证成功");
 			bean.setName(su.getNickname());
@@ -177,54 +182,47 @@ public class ClientThread implements Runnable {
 	 * @auther: wutp 2016年11月5日
 	 * @return void
 	 * @throws IOException 
+	 * @throws SQLException 
 	 */
-	private void ActionSignIn2(MessageBean bean) throws IOException{
-		MessageBean mbean = new MessageBean();
-		System.out.println(bean.getType() + ":" + bean.getUser().getUc() + bean.getUser().getPwd());
+	private void ActionSignIn2(MessageBean bean) 
+			throws IOException, SQLException{
+		MessageBean mbean = new MessageBean();		
+		User user = bean.getClientUser();
+		System.out.println(bean.getType() + ":" 
+				+ user.toString()+"-"+user.getPassword());
+		UserInfo checkUserInfo = new UserInfo();
+		checkUserInfo.setUc(Integer.valueOf(user.toString()));
+		checkUserInfo.setPwd(user.getPassword());
+		ResultObject RO = ucService.checkUser(checkUserInfo);
 		
-		
-		UserInfo su = ucService.checkUser(bean.getUser());
-		if (su!=null && !"1".equals(su.getStatus())) {
+		if(RO.ErrorCode == 1){
 			System.out.println("sql验证成功");
-			bean.setName(su.getNickname());
 			//发送登录成功消息，更新后台在线列表
 			mbean.setType(MessageType.SIGN_IN_SUCCESS);
+			UserInfo su = (UserInfo) RO.ResponseObject;
 			mbean.setUser(su);
 			
-			//初始化主界面信息
-			Set<GroupTable> groupTables= UcService.getGroupTableByNickName(bean.getName().trim());
-			//mbean = new MessageBean();
-			//mbean.setType(MessageType.INIT_FRIEND_LIST);
-			mbean.setGroups((HashSet<GroupTable>)groupTables);
-			Set<UserInfo> fUsers= (Set<UserInfo>) UcService.getAllFriendsUserInfoByNickName(bean.getName().trim());
-			mbean.setUsers((HashSet<UserInfo>)fUsers);
+			UserInformation userinfo = UcService.verificationUser(user,su.getNickname().trim());
+			mbean.setUserInformation(userinfo);
 			
 			sendSingletonMessage(mbean);
-
-			// 告诉其他人我上线了
-			Set<UserInfo> allUsers = new HashSet<>();
-			allUsers.addAll(fUsers);
-			for(GroupTable g : groupTables){
-				HashSet<UserInfo> groupFriends= (HashSet<UserInfo>) 
-						ucService.getGroupUserInfoByGname(g.getGname().trim());
-				allUsers.addAll(groupFriends);
-			}
-			allUsers.remove(bean.getName());
-			updateFriendsList(allUsers,bean.getName());
 			
-			ServerServer.signinThreads.put(bean.getName(), this);
-			AppWindow.AddList(bean.getName());
+			ServerServer.signinThreads.put(user.toString(), this);
+			AppWindow.AddList(su.getNickname().trim());				
+		}else if(RO.ErrorCode == 0){			
+			mbean = new MessageBean();
+			mbean.setType(MessageType.SIGN_IN_FALSE);			
+			mbean.setErrorMessage("服务器异常！");			
+			oos = new ObjectOutputStream(clientsocket.getOutputStream());
+			oos.writeObject(mbean);
+			oos.flush();		
 		} else {
 			mbean = new MessageBean();
-			mbean.setType(MessageType.SIGN_IN_FALSE);
-			if("1".equals(su.getStatus())){
-				mbean.setErrorMessage("已经登陆，不允许重复登录！");
-			}
+			mbean.setType(MessageType.SIGN_IN_FALSE);			
+			mbean.setErrorMessage(RO.ErrorString);			
 			oos = new ObjectOutputStream(clientsocket.getOutputStream());
 			oos.writeObject(mbean);
 			oos.flush();
-
-			System.out.println("sql验证失败");
 		}
 	}
 	

@@ -5,7 +5,6 @@ import java.util.HashSet;
 
 import uc.common.domain.GroupTable;
 import uc.common.domain.UserInfo;
-import uc.common.dto.UserInformation;
 
 public class MessageBean implements Serializable {
 
@@ -13,10 +12,13 @@ public class MessageBean implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	@Deprecated
 	private String name;// 登录名
+	@Deprecated
 	private String pwd;// 密码
 	private String type; // 1私聊 0上下线更新 -1下线请求 2请求发送文件 3.确定接收文件
-
+	private User clientUser;//用户对象 2016.11.27
+	
 	private HashSet<String> clients; // 存放选中的客户
 	private HashSet<String> to;
 	private String friendName;
@@ -34,9 +36,19 @@ public class MessageBean implements Serializable {
 	private HashSet<UserInfo> users;//用户信息
 	
 	private String ErrorMessage;//错误信息
+	@Deprecated
 	private UserInfo user;//用户信息
 	
 	private UserInformation userInformation;//主界面信息
+	
+	public User getClientUser() {
+		return clientUser;
+	}
+
+	public void setClientUser(User clientUser) {
+		this.clientUser = clientUser;
+	}
+	
 	public UserInfo getUser() {
 		return user;
 	}
