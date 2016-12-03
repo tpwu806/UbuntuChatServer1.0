@@ -9,9 +9,11 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import uc.common.MessageBean;
+import uc.common.MessageModel;
 import uc.common.MessageType;
 import uc.dal.sevice.UcService;
 import uc.dof.ServerJFrame;
+import uc.pub.tool.DataTool;
 
 /**
  * @Description: 服务器后台
@@ -72,8 +74,11 @@ public class ServerServer implements Runnable{
 	public void broadcast(String str) {
 		MessageBean serverBean = new MessageBean();
 		serverBean.setType(MessageType.SERVER_BROADCAST);
-		serverBean.setInfo(str);		
-		
+		MessageModel message = new MessageModel();
+		message.setSender("系统管理员");
+		message.setTime(DataTool.getTimer());
+		message.setInfo(str);	
+		serverBean.setObject(message);
 		Collection<ClientThread> clients = ServerServer.signinThreads.values();
 		Iterator<ClientThread> it = clients.iterator();
 		ObjectOutputStream oos;

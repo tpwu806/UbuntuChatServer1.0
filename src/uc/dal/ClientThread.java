@@ -12,8 +12,8 @@ import java.util.Set;
 
 import uc.common.MessageBean;
 import uc.common.MessageType;
-import uc.common.User;
-import uc.common.UserInformation;
+import uc.common.UserModel;
+import uc.common.UserInfoModel;
 import uc.common.domain.GroupTable;
 import uc.common.domain.ResultObject;
 import uc.common.domain.UserInfo;
@@ -59,42 +59,42 @@ public class ClientThread implements Runnable {
 				}
 				// 注册
 				case MessageType.SIGN_UP: {
-					ActionSignUp(bean);					
+					//ActionSignUp(bean);					
 					break;
 				}
 				// 下线	
 				case MessageType.SIGN_OUT: { 														
-					ActionSignOut(bean);
+					//ActionSignOut(bean);
 					//return;
 				}
 				// 群聊天
 				case MessageType.GROUP_CHAT: { 
-					ActionGroupChat(bean);
+					//ActionGroupChat(bean);
 					break;
 				}
 				// 请求接受文件
 				case MessageType.FILE_REQUESTION: { 
-					ActionFileRequestion(bean);
+					//ActionFileRequestion(bean);
 					break;
 				}
 				// 确定接收文件
 				case MessageType.FILE_RECEIVE: { 
-					ActionFileReceive(bean);					
+					//ActionFileReceive(bean);					
 					break;
 				}
 				// 确定接收文件
 				case MessageType.FILE_RECEIVE_OK: {
-					ActionFileReceiveOk(bean);					
+					//ActionFileReceiveOk(bean);					
 					break;
 				}
 				// 一对一聊天
 				case MessageType.SINGLETON_CHAT: { 					
-					ActionSingletonChat(bean);					
+					//ActionSingletonChat(bean);					
 					break;
 				}
 				// 更新群好友
 				case MessageType.GET_GROUP_FRIEND_LIST: {
-					ActionUpdateGroupFriends(bean);
+					//ActionUpdateGroupFriends(bean);
 					break;
 				}
 				// 更新群好友
@@ -126,7 +126,7 @@ public class ClientThread implements Runnable {
 	 * @throws IOException 
 	 */
 	@Deprecated
-	private void ActionSignIn(MessageBean bean) throws IOException{
+	/*private void ActionSignIn(MessageBean bean) throws IOException{
 		MessageBean mbean = new MessageBean();
 		System.out.println(bean.getType() + ":" + bean.getUser().getUc() + bean.getUser().getPwd());
 		
@@ -175,7 +175,7 @@ public class ClientThread implements Runnable {
 
 			System.out.println("sql验证失败");
 		}
-	}
+	}*/
 	
 	/**
 	 * @Description:
@@ -187,12 +187,12 @@ public class ClientThread implements Runnable {
 	private void ActionSignIn2(MessageBean bean) 
 			throws IOException, SQLException{
 		MessageBean mbean = new MessageBean();		
-		User user = bean.getClientUser();
+		UserModel userModel = (UserModel) bean.getObject();
 		System.out.println(bean.getType() + ":" 
-				+ user.toString()+"-"+user.getPassword());
+				+ userModel.toString()+"-"+userModel.getPassword());
 		UserInfo checkUserInfo = new UserInfo();
-		checkUserInfo.setUc(Integer.valueOf(user.toString()));
-		checkUserInfo.setPwd(user.getPassword());
+		checkUserInfo.setUc(Integer.valueOf(userModel.toString()));
+		checkUserInfo.setPwd(userModel.getPassword());
 		ResultObject RO = ucService.checkUser(checkUserInfo);
 		
 		if(RO.ErrorCode == 1){
@@ -200,14 +200,13 @@ public class ClientThread implements Runnable {
 			//发送登录成功消息，更新后台在线列表
 			mbean.setType(MessageType.SIGN_IN_SUCCESS);
 			UserInfo su = (UserInfo) RO.ResponseObject;
-			mbean.setUser(su);
+			//mbean.setUser(su);
 			
-			UserInformation userinfo = UcService.verificationUser(user,su.getNickname().trim());
-			mbean.setUserInformation(userinfo);
-			
+			UserInfoModel userinfo = UcService.verificationUser(userModel,su.getNickname().trim());
+			mbean.setObject(userinfo);
 			sendSingletonMessage(mbean);
 			
-			ServerServer.signinThreads.put(user.toString(), this);
+			ServerServer.signinThreads.put(userModel.toString(), this);
 			AppWindow.AddList(su.getNickname().trim());				
 		}else if(RO.ErrorCode == 0){			
 			mbean = new MessageBean();
@@ -233,7 +232,7 @@ public class ClientThread implements Runnable {
 	 * @throws IOException
 	 * @return void
 	 */
-	private void ActionSignUp(MessageBean bean) throws IOException{
+	/*private void ActionSignUp(MessageBean bean) throws IOException{
 		MessageBean mbean = new MessageBean();
 		System.out.println(bean.getType() + bean.getName() + bean.getPwd());
 		String sql = "insert into User values(?,?,?)";
@@ -260,13 +259,13 @@ public class ClientThread implements Runnable {
 		}
 	}
 
-	/**
+	*//**
 	 * @Description:
 	 * @auther: wutp 2016年10月22日
 	 * @param bean
 	 * @throws IOException
 	 * @return void
-	 */
+	 *//*
 	private void ActionSignOut(MessageBean bean) throws IOException{
 		// 告诉其他人我下线了
 		MessageBean mbean = new MessageBean();
@@ -292,12 +291,12 @@ public class ClientThread implements Runnable {
 		// 向选中的客户发送数据
 		sendMessage(mbean);
 	}
-	/**
+	*//**
 	 * @Description:一对一聊天
 	 * @auther: wutp 2016年10月16日
 	 * @param serverBean
 	 * @return void
-	 */
+	 *//*
 	private void ActionSingletonChat(MessageBean bean)throws IOException{
 		ObjectOutputStream oos;
 		MessageBean serverBean;
@@ -323,13 +322,13 @@ public class ClientThread implements Runnable {
 		
 	}
 	
-	/**
+	*//**
 	 * @Description:
 	 * @auther: wutp 2016年10月22日
 	 * @param bean
 	 * @throws IOException
 	 * @return void
-	 */
+	 *//*
 	private void ActionFileRequestion(MessageBean bean)throws IOException{
 		// 创建服务器的catbean，并发送给客户端
 		MessageBean mbean = new MessageBean();
@@ -345,13 +344,13 @@ public class ClientThread implements Runnable {
 		// 向选中的客户发送数据
 		sendMessage(mbean);
 	}
-	/**
+	*//**
 	 * @Description:
 	 * @auther: wutp 2016年10月22日
 	 * @param bean
 	 * @throws IOException
 	 * @return void
-	 */
+	 *//*
 	private void ActionFileReceive(MessageBean bean)throws IOException{
 		MessageBean mbean = new MessageBean();
 		mbean.setType(MessageType.FILE_RECEIVE);
@@ -365,13 +364,13 @@ public class ClientThread implements Runnable {
 		// 通知文件来源的客户，对方确定接收文件
 		sendMessage(mbean);
 	}
-	/**
+	*//**
 	 * @Description:
 	 * @auther: wutp 2016年10月22日
 	 * @param bean
 	 * @throws IOException
 	 * @return void
-	 */
+	 *//*
 	private void ActionFileReceiveOk(MessageBean bean)throws IOException{
 		MessageBean mbean = new MessageBean();
 
@@ -397,11 +396,11 @@ public class ClientThread implements Runnable {
 		
 	}
 
-	/**
+	*//**
 	 * @Description:更新好友列表
 	 * @auther: wutp 2016年10月15日
 	 * @return void
-	 */
+	 *//*
 	private void updateFriendsList(Set<UserInfo> allUsers,String name){
 		//首先取得所有的在线用户
 		HashSet<String> hs = new HashSet<>();
@@ -418,12 +417,12 @@ public class ClientThread implements Runnable {
 		sendMessage(serverBean);
 	}
 
-	/**
+	*//**
 	 * @Description:// 向选中的用户发送数据
 	 * @auther: wutp 2016年10月15日
 	 * @param serverBean
 	 * @return void
-	 */
+	 *//*
 	private void sendMessage(MessageBean serverBean) {
 		// 首先取得所有的在线用户
 		Set<String> onlines = ServerServer.signinThreads.keySet();
@@ -450,12 +449,12 @@ public class ClientThread implements Runnable {
 		}
 	}
 	
-	/**
+	*//**
 	 * @Description:向所有的用户发送信息
 	 * @auther: wutp 2016年10月14日
 	 * @param serverBean
 	 * @return void
-	 */
+	 *//*
 	@Deprecated
 	private void sendOtherAll(MessageBean serverBean) {
 		//首先取得所有的在线用户
@@ -480,7 +479,7 @@ public class ClientThread implements Runnable {
 			}
 		}
 		
-	}
+	}*/
 	
 	/**
 	 * @Description:// 向选中的用户发送数据

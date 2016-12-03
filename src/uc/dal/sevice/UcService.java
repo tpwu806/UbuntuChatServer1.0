@@ -13,8 +13,8 @@ import javax.imageio.ImageIO;
 
 import uc.common.FriendItemModel;
 import uc.common.GroupModel;
-import uc.common.User;
-import uc.common.UserInformation;
+import uc.common.UserModel;
+import uc.common.UserInfoModel;
 import uc.common.domain.Friends;
 import uc.common.domain.GroupTable;
 import uc.common.domain.ResultObject;
@@ -135,28 +135,28 @@ public class UcService {
 	 * @return Set<GroupTable>
 	 */
 	@Deprecated
-	public static UserInformation getUserInformationByNickName(String nickname) {
-		UserInformation userInformation = null;
+	public static UserInfoModel getUserInformationByNickName(String nickname) {
+		UserInfoModel userInfoModel = null;
 		UserInfo u = UserInfoDAO.getUserInfoByNickName(nickname);
 		Set<SubGroup> subGroups = SubGroupDAO.getSubGroupByUc(u.getUc());
-		return userInformation;
+		return userInfoModel;
 	}
 
 	/**
 	 * @Description:验证用户
 	 * @auther: wutp 2016年11月27日
-	 * @param user
+	 * @param userModel
 	 * @param nickName 
 	 * @return
 	 * @throws SQLException
 	 * @return UserInformation
 	 */
-	public static UserInformation verificationUser(User user, String nickName) throws SQLException {
-		UserInformation userInformation = null ;
+	public static UserInfoModel verificationUser(UserModel userModel, String nickName) throws SQLException {
+		UserInfoModel userInfoModel = null ;
 		// 当前程序所在路径
 		String route = System.getProperty("user.dir") + "/";
 		// 取得账户信息
-		String uc = user.toString();
+		String uc = userModel.toString();
 		Set<SubGroup> SubGroups = null;							
 		//继续查询该用户的分组			
 		SubGroups = SubGroupDAO.getSubGroupByUc(Integer.valueOf(uc));
@@ -198,8 +198,8 @@ public class UcService {
 				groupModels.add(group);
 			}
 		}
-		userInformation = new UserInformation(user, nickName,groupModels);
-		return userInformation;	
+		userInfoModel = new UserInfoModel(userModel, nickName,groupModels);
+		return userInfoModel;	
 	}
 	// 将图像转换为字节数组好用于传输
 	public static byte[] createByte(File s) {
