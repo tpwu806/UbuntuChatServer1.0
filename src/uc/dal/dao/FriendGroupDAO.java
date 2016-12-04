@@ -6,12 +6,12 @@ import java.sql.SQLException;
 import java.util.Set;
 
 import uc.common.domain.Friends;
-import uc.common.domain.GroupTable;
-import uc.common.domain.SubGroup;
+import uc.common.domain.GroupInfo;
+import uc.common.domain.FriendGroup;
 import uc.dal.db.ConnectionUtil;
 import uc.dal.db.DbUtils;
 
-public class SubGroupDAO {
+public class FriendGroupDAO {
 
 	/**
 	 * @Description:根据uc获取所有好友分组信息
@@ -20,13 +20,13 @@ public class SubGroupDAO {
 	 * @return
 	 * @return Set<GroupTable>
 	 */
-	public static Set<SubGroup> getSubGroupByUc(Integer uc) {
-		Set<SubGroup> set = null;
+	public static Set<FriendGroup> getSubGroupByUc(String uc) {
+		Set<FriendGroup> set = null;
 		Connection conn = ConnectionUtil.getConnection();
 		ResultSet rs = null;
 		try {
-			String sql = "SELECT * FROM subgroup WHERE uc = ?";
-			String[] params = {String.valueOf(uc)};
+			String sql = "SELECT * FROM friendgroup WHERE UID = ?";
+			String[] params = {uc};
 			rs = DbUtils.getResultSet2(conn,sql,params);
 			set =  TableToDomain.resultSetSubGroup(rs);
 		} catch (Exception e) {

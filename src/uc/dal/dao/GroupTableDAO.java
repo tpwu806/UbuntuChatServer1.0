@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
 
-import uc.common.domain.GroupTable;
+import uc.common.domain.GroupInfo;
 import uc.dal.db.ConnectionUtil;
 import uc.dal.db.DbUtils;
 
@@ -18,8 +18,8 @@ public class GroupTableDAO {
 	 * @return
 	 * @return Set<GroupTable>
 	 */
-	public static Set<GroupTable> getGroupTableByNickName(String nickname) {
-		Set<GroupTable> set = null;
+	public static Set<GroupInfo> getGroupTableByNickName(String nickname) {
+		Set<GroupInfo> set = null;
 		Connection conn = ConnectionUtil.getConnection();
 		ResultSet rs = null;
 		try {

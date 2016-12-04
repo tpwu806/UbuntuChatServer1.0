@@ -50,7 +50,7 @@ public class UserInfoDAO {
 		Connection conn = ConnectionUtil.getConnection();
 		ResultSet rs = null;
 		try {
-			String sql = "SELECT * FROM userinfo WHERE uc = ? ";			
+			String sql = "SELECT * FROM userinfo WHERE UID = ? ";			
 			String[] params = {uc};
 			rs = DbUtils.getResultSet2(conn,sql,params);
 			if(rs.next())
@@ -78,7 +78,7 @@ public class UserInfoDAO {
 		Connection conn = ConnectionUtil.getConnection();
 		ResultSet rs = null;
 		try {
-			String sql = "select * from USERINFO where  uc=? and pwd=?";
+			String sql = "select * from USERINFO where  UID = ? and PWD = ?";
 			String[] params = {uc,pwd};
 			rs = DbUtils.getResultSet2(conn,sql,params);
 			u =  TableToDomain.resultSetUserInfo(rs);
@@ -122,13 +122,13 @@ public class UserInfoDAO {
 	 * @param status
 	 * @return void
 	 */
-	public static void UpdateSatusByUcAndStatus(Integer uc,int status){
+	public static void UpdateSatusByUcAndStatus(String uc,String status){
 		String[] params = new String[2];
-		params[0] = String.valueOf(status);
-		params[1] = String.valueOf(uc);
+		params[0] = status;
+		params[1] = uc;
 
 		Connection conn = ConnectionUtil.getConnection();
-		String sql = "UPDATE USERINFO SET STATUS = ? WHERE UC = ?";
+		String sql = "UPDATE USERINFO SET STATUS = ? WHERE UID = ?";
 		try {
 			DbUtils.execute(conn,sql,params);
 		} catch (SQLException e) {
@@ -168,8 +168,8 @@ public class UserInfoDAO {
 		try {
 			String sql = "SELECT u.* FROM userinfo u, usergroup ug,grouptable gt ";
 			sql += "WHERE 1 = ? ";
-			sql += "AND u.`UC` = ug.`UC`";
-			sql += "AND ug.`GNO` = gt.`GNO`;";
+			sql += "AND u.`UID` = ug.`UID`";
+			sql += "AND ug.`UID` = gt.`GID`;";
 			String[] params = {"1"};
 			rs = DbUtils.getResultSet2(conn,sql,params);
 			set =  TableToDomain.resultSetUserInfos(rs);
@@ -192,15 +192,15 @@ public class UserInfoDAO {
 	 * @return
 	 * @return Set<UserInfo>
 	 */
-	public static Set<UserInfo> getAllFriendsUserInfoByUc(Integer uc) {
+	public static Set<UserInfo> getAllFriendsUserInfoByUc(String uc) {
 		Set<UserInfo> set = null;
 		Connection conn = ConnectionUtil.getConnection();
 		ResultSet rs = null;
 		try {
 			String sql = "SELECT u.* FROM userinfo u, friends f ";
-			sql += "WHERE f.`UC` = ? ";
-			sql += "AND u.`UC` = f.`FUC`;";
-			String[] params = {String.valueOf(uc)};
+			sql += "WHERE f.`UID` = ? ";
+			sql += "AND u.`UID` = f.`FID`;";
+			String[] params = {uc};
 			rs = DbUtils.getResultSet2(conn,sql,params);
 			set =  TableToDomain.resultSetUserInfos(rs);
 		} catch (Exception e) {
@@ -229,8 +229,8 @@ public class UserInfoDAO {
 		try {
 			String sql = "SELECT u.* FROM userinfo u, usergroup ug,grouptable gt ";
 			sql += "WHERE gt.`GNAME` = ? ";
-			sql += "AND u.`UC` = ug.`UC`";
-			sql += "AND ug.`GNO` = gt.`GNO`;";
+			sql += "AND u.`UID` = ug.`UID`";
+			sql += "AND ug.`GID` = gt.`GID`;";
 			String[] params = {gname};
 			rs = DbUtils.getResultSet2(conn,sql,params);
 			set =  TableToDomain.resultSetUserInfos(rs);

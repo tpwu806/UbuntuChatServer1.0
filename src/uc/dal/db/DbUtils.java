@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import uc.common.domain.GroupTable;
+import uc.common.domain.GroupInfo;
 
 /**
  * @Title: DbHelper.java

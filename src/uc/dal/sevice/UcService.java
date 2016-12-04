@@ -12,16 +12,16 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 
 import uc.common.FriendItemModel;
-import uc.common.GroupModel;
+import uc.common.FriendGroupModel;
 import uc.common.UserModel;
 import uc.common.UserInfoModel;
 import uc.common.domain.Friends;
-import uc.common.domain.GroupTable;
+import uc.common.domain.GroupInfo;
 import uc.common.domain.ResultObject;
-import uc.common.domain.SubGroup;
+import uc.common.domain.FriendGroup;
 import uc.common.domain.UserInfo;
 import uc.dal.dao.GroupTableDAO;
-import uc.dal.dao.SubGroupDAO;
+import uc.dal.dao.FriendGroupDAO;
 import uc.dal.dao.UserInfoDAO;
 
 /**
@@ -34,19 +34,19 @@ public class UcService {
 	/**
 	 * @Description:登录验证
 	 * @auther: wutp 2016年10月23日
-	 * @param user
+	 * @param userModel
 	 * @return
 	 * @return UserInfo
 	 */
-	public ResultObject checkUser(UserInfo user) {
+	public ResultObject checkUser(UserModel userModel) {
 		ResultObject PO = new ResultObject();
 		UserInfo suser = null;	
-		suser = UserInfoDAO.getUserInfoByUc(user.getUc().toString().trim());
+		suser = UserInfoDAO.getUserInfoByUc(userModel.getUcId().trim());
 		if(suser == null){
 			return PO = new ResultObject(null, -1, "查无此账号，请先注册！");
 		}
 		suser = UserInfoDAO.getUserInfoByUcAndPwd(
-				user.getUc().toString().trim(), user.getPwd().trim());		
+				userModel.getUcId().trim(), userModel.getPassword().trim());		
 		if(suser == null){
 			return PO = new ResultObject(null, -1, "密码错误，请输入正确密码！");
 		}
@@ -71,8 +71,8 @@ public class UcService {
 	public void initUserStatus(){
 		Set<UserInfo> users = UserInfoDAO.getAllUser();
 		for(UserInfo u: users){
-			Integer uc = u.getUc();
-			int status = 0;
+			String uc = u.getUid();
+			String status = "0";
 			UserInfoDAO.UpdateSatusByUcAndStatus(uc,status);
 		}
 	}
@@ -93,7 +93,7 @@ public class UcService {
 	 * @return
 	 * @return Set<GroupTable>
 	 */
-	public static Set<GroupTable> getGroupTableByNickName(String nickname) {
+	public static Set<GroupInfo> getGroupTableByNickName(String nickname) {
 		return GroupTableDAO.getGroupTableByNickName(nickname);
 	}
 
@@ -121,7 +121,7 @@ public class UcService {
 	public static Set<UserInfo> getAllFriendsUserInfoByNickName(String name) {
 		UserInfo u = UserInfoDAO.getUserInfoByNickName(name);
 		Set<UserInfo> set = null;
-		set = UserInfoDAO.getAllFriendsUserInfoByUc(u.getUc());
+		set = UserInfoDAO.getAllFriendsUserInfoByUc(u.getUid());
 		return set;
 	}
 	
@@ -138,7 +138,7 @@ public class UcService {
 	public static UserInfoModel getUserInformationByNickName(String nickname) {
 		UserInfoModel userInfoModel = null;
 		UserInfo u = UserInfoDAO.getUserInfoByNickName(nickname);
-		Set<SubGroup> subGroups = SubGroupDAO.getSubGroupByUc(u.getUc());
+		Set<FriendGroup> friendGroups = FriendGroupDAO.getSubGroupByUc(u.getUid());
 		return userInfoModel;
 	}
 
@@ -151,27 +151,28 @@ public class UcService {
 	 * @throws SQLException
 	 * @return UserInformation
 	 */
-	public static UserInfoModel verificationUser(UserModel userModel, String nickName) throws SQLException {
+	public static UserInfoModel verificationUser(UserModel userModel) throws SQLException {
 		UserInfoModel userInfoModel = null ;
 		// 当前程序所在路径
 		String route = System.getProperty("user.dir") + "/";
 		// 取得账户信息
-		String uc = userModel.toString();
-		Set<SubGroup> SubGroups = null;							
+		String uc = userModel.getUcId();
+		UserInfo userinfo = UserInfoDAO.getUserInfoByUc(uc);
+		userModel.setNickName(userinfo.getNickname());
+		Set<FriendGroup> FriendGroups = null;							
 		//继续查询该用户的分组			
-		SubGroups = SubGroupDAO.getSubGroupByUc(Integer.valueOf(uc));
-		ArrayList<GroupModel> groupModels = new ArrayList<GroupModel>();
+		FriendGroups = FriendGroupDAO.getSubGroupByUc(uc);
+		ArrayList<FriendGroupModel> friendGroupModels = new ArrayList<FriendGroupModel>();
 
-		if(SubGroups != null){
-			for(SubGroup subGroup : SubGroups) {
+		if(FriendGroups != null){
+			for(FriendGroup friendGroup : FriendGroups) {
 				// 取得分组名并构建
-				String groupName = subGroup.getSname();
-				GroupModel group = new GroupModel(groupName);
-				group.setSno(subGroup.getSno());
-				group.setSdate(subGroup.getSdate());
-				group.setUc(subGroup.getUc());
+				String groupName = friendGroup.getSname();
+				FriendGroupModel group = new FriendGroupModel(groupName);
+				group.setSid(friendGroup.getSid());
+				group.setUid(friendGroup.getUid());
 				//继续查询该分组下的好友
-				Set<Friends> friends = SubGroupDAO.getFriendsOfSubGroupByUcAndSunGroupId(uc, group.getSno().toString().trim());
+				Set<Friends> friends = FriendGroupDAO.getFriendsOfSubGroupByUcAndSunGroupId(uc, group.getSid().toString().trim());
 				if(friends != null && friends.size() > 0){
 					for (Friends friend : friends) {
 						String headFile = route + friend.getPhotoid();
@@ -189,16 +190,16 @@ public class UcService {
 								friend.getNickname(),
 								hasUpdate, 
 								friend.getSign(), 
-								friend.getFuc().toString(),
+								friend.getFid().toString(),
 								friend.getStatus());
 									
 						group.add(friendModel);
 					}
 				}
-				groupModels.add(group);
+				friendGroupModels.add(group);
 			}
 		}
-		userInfoModel = new UserInfoModel(userModel, nickName,groupModels);
+		userInfoModel = new UserInfoModel(userModel,friendGroupModels);
 		return userInfoModel;	
 	}
 	// 将图像转换为字节数组好用于传输
@@ -222,7 +223,7 @@ public class UcService {
 	public static void main(String[] args) {
 		Set<UserInfo> set = getAllFriendsUserInfoByNickName("system1");
 		for(UserInfo u : set){
-			System.out.println(u.getUc());
+			System.out.println(u.getUid());
 		}
 	}
 

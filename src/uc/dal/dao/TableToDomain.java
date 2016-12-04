@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import uc.common.domain.Friends;
-import uc.common.domain.GroupTable;
-import uc.common.domain.SubGroup;
+import uc.common.domain.GroupInfo;
+import uc.common.domain.FriendGroup;
 import uc.common.domain.UserInfo;
 
 public class TableToDomain {
@@ -20,15 +20,15 @@ public class TableToDomain {
 	 * @return
 	 * @return Set<GroupTable>
 	 */
-	public static Set<GroupTable> resultSetGroupTable(ResultSet rs) {
-		Set<GroupTable> Set = new HashSet<>();
-		GroupTable g = null;
+	public static Set<GroupInfo> resultSetGroupTable(ResultSet rs) {
+		Set<GroupInfo> Set = new HashSet<>();
+		GroupInfo g = null;
 		if (rs == null)
 			return null;
 		try {
 			while (rs.next()) {
-				g = new GroupTable();
-				g.setGno(rs.getInt("GNO"));
+				g = new GroupInfo();
+				g.setGid(rs.getString("GID"));
 				g.setGname(rs.getString("GNAME").trim());
 				g.setGdate(rs.getTimestamp("GDATE"));
 				Set.add(g);		
@@ -55,7 +55,7 @@ public class TableToDomain {
 		try {
 			while (rs.next()) {
 				g = new UserInfo();
-				g.setUc(rs.getInt("UC"));
+				g.setUid(rs.getString("UID"));
 				g.setNickname(rs.getString("NICKNAME"));
 				g.setStatus(rs.getString("STATUS"));
 				
@@ -82,7 +82,7 @@ public class TableToDomain {
 		try {
 			while (rs.next()) {
 				u = new UserInfo();
-				u.setUc(rs.getInt("UC"));
+				u.setUid(rs.getString("UID"));
 				u.setNickname(rs.getString("NICKNAME"));
 				u.setStatus(rs.getString("STATUS"));
 					
@@ -101,18 +101,17 @@ public class TableToDomain {
 	 * @return
 	 * @return Set<SubGroup>
 	 */
-	public static Set<SubGroup> resultSetSubGroup(ResultSet rs) {
-		Set<SubGroup> Set = new HashSet<>();
-		SubGroup s = null;
+	public static Set<FriendGroup> resultSetSubGroup(ResultSet rs) {
+		Set<FriendGroup> Set = new HashSet<>();
+		FriendGroup s = null;
 		if (rs == null)
 			return null;
 		try {
 			while (rs.next()) {
-				s = new SubGroup();
-				s.setSno(rs.getInt("SNO"));
+				s = new FriendGroup();
+				s.setSid(rs.getString("SID"));
 				s.setSname(rs.getString("SNAME").trim());
-				s.setSdate(rs.getTimestamp("SDATE"));
-				s.setUc(rs.getInt("UC"));
+				s.setUid(rs.getString("UID"));
 				Set.add(s);		
 			}
 		} catch (SQLException e) {
@@ -139,11 +138,11 @@ public class TableToDomain {
 				friend = new Friends();
 				friend.setFdate(rs.getTimestamp("FDATE"));
 				friend.setRemarks(rs.getString("REMARKS"));
-				friend.setFuc(rs.getInt("FUC"));
+				friend.setFid(rs.getString("FID"));
 				friend.setSign(rs.getString("SIGN"));
 				friend.setPhotoid(rs.getString("PHOTOID"));
 				friend.setNickname(rs.getString("NICKNAME"));
-				friend.setStatus(rs.getString("status"));
+				friend.setStatus(rs.getString("STATUS"));
 				
 				Set.add(friend);
 			}

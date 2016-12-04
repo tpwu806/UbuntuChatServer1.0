@@ -14,7 +14,7 @@ import uc.common.MessageBean;
 import uc.common.MessageType;
 import uc.common.UserModel;
 import uc.common.UserInfoModel;
-import uc.common.domain.GroupTable;
+import uc.common.domain.GroupInfo;
 import uc.common.domain.ResultObject;
 import uc.common.domain.UserInfo;
 import uc.dal.sevice.TableModel;
@@ -54,7 +54,7 @@ public class ClientThread implements Runnable {
 				switch (bean.getType()) {
 				// 登录
 				case MessageType.SIGN_IN: {
-					ActionSignIn2(bean);
+					ActionSignIn(bean);
 					break;
 				}
 				// 注册
@@ -125,7 +125,6 @@ public class ClientThread implements Runnable {
 	 * @return void
 	 * @throws IOException 
 	 */
-	@Deprecated
 	/*private void ActionSignIn(MessageBean bean) throws IOException{
 		MessageBean mbean = new MessageBean();
 		System.out.println(bean.getType() + ":" + bean.getUser().getUc() + bean.getUser().getPwd());
@@ -184,30 +183,25 @@ public class ClientThread implements Runnable {
 	 * @throws IOException 
 	 * @throws SQLException 
 	 */
-	private void ActionSignIn2(MessageBean bean) 
+	private void ActionSignIn(MessageBean bean) 
 			throws IOException, SQLException{
 		MessageBean mbean = new MessageBean();		
 		UserModel userModel = (UserModel) bean.getObject();
 		System.out.println(bean.getType() + ":" 
 				+ userModel.toString()+"-"+userModel.getPassword());
-		UserInfo checkUserInfo = new UserInfo();
-		checkUserInfo.setUc(Integer.valueOf(userModel.toString()));
-		checkUserInfo.setPwd(userModel.getPassword());
-		ResultObject RO = ucService.checkUser(checkUserInfo);
+		ResultObject RO = ucService.checkUser(userModel);
 		
 		if(RO.ErrorCode == 1){
 			System.out.println("sql验证成功");
 			//发送登录成功消息，更新后台在线列表
 			mbean.setType(MessageType.SIGN_IN_SUCCESS);
-			UserInfo su = (UserInfo) RO.ResponseObject;
-			//mbean.setUser(su);
-			
-			UserInfoModel userinfo = UcService.verificationUser(userModel,su.getNickname().trim());
+					
+			UserInfoModel userinfo = UcService.verificationUser(userModel);
 			mbean.setObject(userinfo);
 			sendSingletonMessage(mbean);
 			
 			ServerServer.signinThreads.put(userModel.toString(), this);
-			AppWindow.AddList(su.getNickname().trim());				
+			AppWindow.AddList(userinfo.getUserModel().getNickName());				
 		}else if(RO.ErrorCode == 0){			
 			mbean = new MessageBean();
 			mbean.setType(MessageType.SIGN_IN_FALSE);			

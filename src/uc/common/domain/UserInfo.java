@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 
 /**
- * @Description: 用户信息
+ * @Description: 用户信息表
  * @author wutp 2016年10月23日
  * @version 1.0
  */
@@ -14,7 +14,7 @@ public class UserInfo implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private Integer uc;//uc号
+	private String uid;//uc号
 	private String pwd;//密码
 	private String sign;//签名
 	private String photoid;//头像
@@ -29,11 +29,11 @@ public class UserInfo implements Serializable {
 	private String adress;//住址
 	private String status;//登录状态
 	
-	public Integer getUc() {
-		return uc;
+	public String getUid() {
+		return uid;
 	}
-	public void setUc(Integer uc) {
-		this.uc = uc;
+	public void setUid(String uid) {
+		this.uid = uid;
 	}
 	public String getPwd() {
 		return pwd;
