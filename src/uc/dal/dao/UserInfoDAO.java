@@ -59,7 +59,7 @@ public class UserInfoDAO extends BaseDAO{
 			String[] params = {uc};
 			rs = DbUtils.getResultSet2(conn,sql,params);
 			if(rs.next())
-				u = new UserInfo();
+				u =  TableToDomain.resultSetUserInfo(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -288,6 +288,36 @@ public class UserInfoDAO extends BaseDAO{
 		return fList;
 	}
 	
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年12月4日
+	 * @param string
+	 * @return
+	 * @return ArrayList<String>
+	 */
+	public static ArrayList<String> getAllFriendsByUc(String uid) {
+		ArrayList<String> fList = null;
+		try {
+			String sql = " SELECT FID FROM friendinfo WHERE UID = ?";
+			
+			Object[] params = new Object[1];
+			params[0] = uid;
+			List<Object> list = new UserInfoDAO().getResultList(sql, params);
+			if(list != null && list.size()>0){
+				fList = new ArrayList<>();
+				for(Object o : list){	
+					@SuppressWarnings("unchecked")
+					Map<String, Object> map = (Map<String, Object>) o;					
+					fList.add(map.get("FID").toString());
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {			
+		}
+		return fList;
+	}
+
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 

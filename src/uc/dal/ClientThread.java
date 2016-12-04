@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -17,6 +18,7 @@ import uc.common.UserInfoModel;
 import uc.common.domain.GroupInfo;
 import uc.common.domain.ResultObject;
 import uc.common.domain.UserInfo;
+import uc.dal.dao.UserInfoDAO;
 import uc.dal.sevice.TableModel;
 import uc.dal.sevice.UcService;
 import uc.dof.ServerJFrame;
@@ -199,23 +201,25 @@ public class ClientThread implements Runnable {
 			UserInfoModel userinfo = UcService.verificationUser(userModel);
 			mbean.setObject(userinfo);
 			sendSingletonMessage(mbean);
-			
+			//告诉其他人我上线了
+			MessageBean mbean2 = new MessageBean();
+			mbean2.setType(MessageType.SERVER_UPDATE_FRIENDS);
+			mbean2.setObject(userModel.toString());
+			ArrayList<String> clients = UserInfoDAO.getAllFriendsByUc(userModel.toString());
+			if(clients != null)
+				sendMessage(mbean2,clients);
 			ServerServer.signinThreads.put(userModel.toString(), this);
 			AppWindow.AddList(userinfo.getUserModel().getNickName());				
 		}else if(RO.ErrorCode == 0){			
 			mbean = new MessageBean();
 			mbean.setType(MessageType.SIGN_IN_FALSE);			
-			mbean.setErrorMessage("服务器异常！");			
-			oos = new ObjectOutputStream(clientsocket.getOutputStream());
-			oos.writeObject(mbean);
-			oos.flush();		
+			mbean.setErrorMessage("服务器异常！");	
+			sendSingletonMessage(mbean);	
 		} else {
 			mbean = new MessageBean();
 			mbean.setType(MessageType.SIGN_IN_FALSE);			
-			mbean.setErrorMessage(RO.ErrorString);			
-			oos = new ObjectOutputStream(clientsocket.getOutputStream());
-			oos.writeObject(mbean);
-			oos.flush();
+			mbean.setErrorMessage(RO.ErrorString);	
+			sendSingletonMessage(mbean);
 		}
 	}
 	
@@ -416,13 +420,13 @@ public class ClientThread implements Runnable {
 	 * @auther: wutp 2016年10月15日
 	 * @param serverBean
 	 * @return void
-	 *//*
-	private void sendMessage(MessageBean serverBean) {
+	 */
+	private void sendMessage(MessageBean serverBean,ArrayList<String> clients) {
 		// 首先取得所有的在线用户
 		Set<String> onlines = ServerServer.signinThreads.keySet();
 		Iterator<String> it = onlines.iterator();
 		// 选中客户
-		HashSet<String> clients = serverBean.getClients();
+		//HashSet<String> clients = serverBean.getClients();
 
 		while (it.hasNext()) {
 			// 选中客户
@@ -443,7 +447,7 @@ public class ClientThread implements Runnable {
 		}
 	}
 	
-	*//**
+	/**
 	 * @Description:向所有的用户发送信息
 	 * @auther: wutp 2016年10月14日
 	 * @param serverBean
