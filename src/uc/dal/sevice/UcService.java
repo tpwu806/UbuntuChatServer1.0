@@ -1,17 +1,12 @@
 package uc.dal.sevice;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
-import javax.imageio.ImageIO;
-
 import uc.common.FriendItemModel;
+import uc.common.CrowdGroupModel;
 import uc.common.FriendGroupModel;
 import uc.common.UserModel;
 import uc.common.UserInfoModel;
@@ -20,12 +15,14 @@ import uc.common.domain.GroupInfo;
 import uc.common.domain.ResultObject;
 import uc.common.domain.FriendGroup;
 import uc.common.domain.UserInfo;
-import uc.dal.dao.GroupTableDAO;
+import uc.dal.dao.GroupInfoDAO;
+import uc.dal.dao.CrowdGroupDAO;
 import uc.dal.dao.FriendGroupDAO;
 import uc.dal.dao.UserInfoDAO;
+import uc.pub.tool.ImagesFunction;
 
 /**
- * @Description: 
+ * @Description: 组织数据，处理异常
  * @author wutp 2016年10月23日
  * @version 1.0
  */
@@ -93,8 +90,8 @@ public class UcService {
 	 * @return
 	 * @return Set<GroupTable>
 	 */
-	public static Set<GroupInfo> getGroupTableByNickName(String nickname) {
-		return GroupTableDAO.getGroupTableByNickName(nickname);
+	public static ArrayList<GroupInfo> getGroupTableByNickName(String nickname) {
+		return GroupInfoDAO.getGroupTableByNickName(nickname);
 	}
 
 
@@ -153,8 +150,7 @@ public class UcService {
 	 */
 	public static UserInfoModel verificationUser(UserModel userModel) throws SQLException {
 		UserInfoModel userInfoModel = null ;
-		// 当前程序所在路径
-		String route = System.getProperty("user.dir") + "/";
+		
 		// 取得账户信息
 		String uc = userModel.getUcId();
 		UserInfo userinfo = UserInfoDAO.getUserInfoByUc(uc);
@@ -163,7 +159,6 @@ public class UcService {
 		//继续查询该用户的分组			
 		FriendGroups = FriendGroupDAO.getSubGroupByUc(uc);
 		ArrayList<FriendGroupModel> friendGroupModels = new ArrayList<FriendGroupModel>();
-
 		if(FriendGroups != null){
 			for(FriendGroup friendGroup : FriendGroups) {
 				// 取得分组名并构建
@@ -175,8 +170,8 @@ public class UcService {
 				Set<Friends> friends = FriendGroupDAO.getFriendsOfSubGroupByUcAndSunGroupId(uc, group.getSid().toString().trim());
 				if(friends != null && friends.size() > 0){
 					for (Friends friend : friends) {
-						String headFile = route + friend.getPhotoid();
-						byte[] head = createByte(new File(headFile));
+						;
+						byte[] head = ImagesFunction.getImage(friend.getPhotoid());
 						boolean hasUpdate = false;
 						switch (friend.getStatus()) {
 						case "0":
@@ -190,7 +185,7 @@ public class UcService {
 								friend.getNickname(),
 								hasUpdate, 
 								friend.getSign(), 
-								friend.getFid().toString(),
+								friend.getUid().toString(),
 								friend.getStatus());
 									
 						group.add(friendModel);
@@ -199,32 +194,18 @@ public class UcService {
 				friendGroupModels.add(group);
 			}
 		}
-		userInfoModel = new UserInfoModel(userModel,friendGroupModels);
+		//群信息
+		ArrayList<CrowdGroupModel> groupsList = CrowdGroupDAO.getCrowdGroupList(uc);
+		userInfoModel = new UserInfoModel(userModel,friendGroupModels,groupsList);
 		return userInfoModel;	
-	}
-	// 将图像转换为字节数组好用于传输
-	public static byte[] createByte(File s) {
-		BufferedImage bu;
-		try {
-			bu = ImageIO.read(s);
-			ByteArrayOutputStream imageStream = new ByteArrayOutputStream();
-			try {
-				ImageIO.write(bu, "png", imageStream);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return imageStream.toByteArray();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		return null;
-	}
+	}	
 	
 	public static void main(String[] args) {
-		Set<UserInfo> set = getAllFriendsUserInfoByNickName("system1");
-		for(UserInfo u : set){
-			System.out.println(u.getUid());
-		}
+		String sql = "select * from crowdgroup where UCID = ?";
+		Object[] params = new Object[1];
+		params[0] = "99999";
+		List<Object> list = new CrowdGroupDAO().getResultList(sql, params);
+		System.out.println(list.toString());
 	}
 
 }

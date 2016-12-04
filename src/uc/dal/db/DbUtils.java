@@ -115,56 +115,29 @@ public class DbUtils {
 		}
 		return rs;
 	}
-	
 	/**
-	 * @Description:显示表
-	 * @auther: wutp 2016年10月17日
-	 * @param conn
+	 * @Description:返回表
 	 * @param sql
-	 * @param params
-	 * @return
-	 * @throws SQLException
-	 * @return Vector[]
+	 * @param params	
+	 * @return ResultSet
+	 * @throws SQLException 
 	 */
-	public static Vector[] query(Connection conn,String sql, String[] params) 
+	public static ResultSet getResultSet3(Connection conn,String sql,Object[] params) 
 			throws SQLException{
-		// 初始化
-		Vector[] data = new Vector[2];
-		Vector<String> colums = new Vector<String>();
-		Vector<Vector> rows = new Vector<Vector>();
-		// Vector[2] = new Vector[2];
-		// this.colums.add("员工号");
-		// this.colums.add("姓名");
-		// this.colums.add("性别");
-		// this.colums.add("职位");			
 		try {
-			ResultSet rs = getResultSet(conn,sql, params);
-			ResultSetMetaData rsmd = rs.getMetaData();
-			for (int i = 0; i < rsmd.getColumnCount(); i++) {
-				colums.add(rsmd.getColumnName(i + 1));
-			}
-			while (rs.next()) {
-				Vector<String> temp = new Vector<String>();
-				for (int i = 0; i < rsmd.getColumnCount(); i++) {
-					temp.add(rs.getString(i + 1));
-				}
-				rows.add(temp);
-				// temp.add(rs.getString(1));
-				// temp.add(rs.getString(2));
-				// temp.add(rs.getString(3));
-				// temp.add(rs.getString(4));
-			}
-			data[0] = colums;
-			data[1] = rows;
+			ps=conn.prepareStatement(sql);
+			for(int i=0;i<params.length;i++)			
+				ps.setObject(i+1, params[i]);			
+			rs=ps.executeQuery();
+			System.out.println("执行sql: " + sql );
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
 		} finally {
-			ConnectionUtil.BackPreparedStatement(conn,ps, rs);
+			//ConnectionUtil.BackPreparedStatement(conn,ps, rs);
 		}
-		return data;
+		return rs;
 	}
-
 	/**
 	 * @Description:查看有多少记录
 	 * @param sql
@@ -272,6 +245,93 @@ public class DbUtils {
 		return confInfo;		
 	}
 	
+	/**
+	 * @Description:显示表
+	 * @auther: wutp 2016年10月17日
+	 * @param conn
+	 * @param sql
+	 * @param params
+	 * @return
+	 * @throws SQLException
+	 * @return Vector[]
+	 */
+	public static Vector[] query(Connection conn,String sql, String[] params) 
+			throws SQLException{
+		// 初始化
+		Vector[] data = new Vector[2];
+		Vector<String> colums = new Vector<String>();
+		Vector<Vector> rows = new Vector<Vector>();
+		// Vector[2] = new Vector[2];
+		// this.colums.add("员工号");
+		// this.colums.add("姓名");
+		// this.colums.add("性别");
+		// this.colums.add("职位");			
+		try {
+			ResultSet rs = getResultSet(conn,sql, params);
+			ResultSetMetaData rsmd = rs.getMetaData();
+			for (int i = 0; i < rsmd.getColumnCount(); i++) {
+				colums.add(rsmd.getColumnName(i + 1));
+			}
+			while (rs.next()) {
+				Vector<String> temp = new Vector<String>();
+				for (int i = 0; i < rsmd.getColumnCount(); i++) {
+					temp.add(rs.getString(i + 1));
+				}
+				rows.add(temp);
+				// temp.add(rs.getString(1));
+				// temp.add(rs.getString(2));
+				// temp.add(rs.getString(3));
+				// temp.add(rs.getString(4));
+			}
+			data[0] = colums;
+			data[1] = rows;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		} finally {
+			ConnectionUtil.BackPreparedStatement(conn,ps, rs);
+		}
+		return data;
+	}
+	/**
+	 * @Description:获取结果集，并将结果放在List中 
+	 * @auther: wutp 2016年12月4日
+	 * @param sql
+	 * @param params
+	 * @return
+	 * @return List<Object>
+	 * @throws Exception 
+	 */
+	public static List<Object> excuteQuery(Connection conn ,String sql, Object[] params) 
+			throws Exception {  
+	    ResultSet rs = getResultSet3(conn,sql, params);  
+	    ResultSetMetaData rsmd = null;            
+	    // 结果集列数  
+	    int columnCount = 0;  
+	    try {  
+	        rsmd = rs.getMetaData();               
+	        // 获得结果集列数  
+	        columnCount = rsmd.getColumnCount();  
+	    } catch (SQLException e1) {  
+	        System.out.println(e1.getMessage());  
+	    }   
+	    List<Object> list = new ArrayList<Object>();   
+	    try {  
+	        while (rs.next()) {  
+	            Map<String, Object> map = new HashMap<String, Object>();  
+	            for (int i = 1; i <= columnCount; i++) {  
+	                map.put(rsmd.getColumnLabel(i), rs.getObject(i));  
+	            }  
+	            list.add(map);  
+	        }  
+	    } catch (SQLException e) {
+	    	e.printStackTrace();
+	    	throw e;          
+	    } finally {  
+	    	ConnectionUtil.BackPreparedStatement(conn,ps, rs); 
+	    }  	
+	    return list;  
+	}
 	/**
 	 * @Description:
 	 * @auther: wutp 2016年10月23日

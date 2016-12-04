@@ -3,13 +3,18 @@ package uc.dal.dao;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import uc.common.FriendItemModel;
 import uc.common.domain.UserInfo;
 import uc.dal.db.ConnectionUtil;
 import uc.dal.db.DbUtils;
+import uc.pub.tool.ImagesFunction;
 
-public class UserInfoDAO {
+public class UserInfoDAO extends BaseDAO{
 	
 	/**
 	 * @Description:根据昵称获取用户信息
@@ -222,6 +227,7 @@ public class UserInfoDAO {
 	 * @return
 	 * @return List<UserInfo>
 	 */
+	@Deprecated
 	public static Set<UserInfo> getGroupUserInfoByGname(String gname) {
 		Set<UserInfo> set = null;
 		Connection conn = ConnectionUtil.getConnection();
@@ -244,6 +250,42 @@ public class UserInfoDAO {
 			}
 		}
 		return set;
+	}
+	
+	/**
+	 * @Description:根据群名称获取群用户信息
+	 * @auther: wutp 2016年12月04日
+	 * @param gname
+	 * @return
+	 * @return ArrayList<FriendItemModel>
+	 */
+	public static ArrayList<FriendItemModel> getUsersByGname(String gid) {
+		ArrayList<FriendItemModel> fList = null;
+		try {
+			String sql = "SELECT u.* FROM userinfo u, crowdgroup c ";
+			sql += " WHERE u.`UID` = c.`UID`";
+			sql += " AND c.`GID` = ? ";
+			Object[] params = new Object[1];
+			params[0] = gid;
+			List<Object> list = new UserInfoDAO().getResultList(sql, params);
+			if(list != null && list.size()>0){
+				fList = new ArrayList<>();
+				for(Object o : list){	
+					@SuppressWarnings("unchecked")
+					Map<String, Object> map = (Map<String, Object>) o;
+					FriendItemModel f = new FriendItemModel();
+					f.setNO(map.get("UID").toString());
+					f.setNickName(map.get("NICKNAME").toString());
+					f.setHead(ImagesFunction.getImage(map.get("PICTURE").toString()));
+					f.setStatus(map.get("STATUS").toString());
+					fList.add(f);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {			
+		}
+		return fList;
 	}
 	
 	public static void main(String[] args) {

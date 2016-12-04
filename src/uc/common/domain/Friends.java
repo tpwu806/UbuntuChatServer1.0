@@ -15,7 +15,6 @@ public class Friends extends UserInfo implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private String fid;//好友uc
 	private String fgid;//所属分组
 	private Timestamp fdate;//添加日期
 	private String remarks;//备注
@@ -24,12 +23,6 @@ public class Friends extends UserInfo implements Serializable {
 		super();
 	}
 	
-	public String getFid() {
-		return fid;
-	}
-	public void setFid(String fid) {
-		this.fid = fid;
-	}
 	public String getFgid() {
 		return fgid;
 	}

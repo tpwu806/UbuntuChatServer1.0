@@ -11,7 +11,7 @@ import uc.common.domain.FriendGroup;
 import uc.dal.db.ConnectionUtil;
 import uc.dal.db.DbUtils;
 
-public class FriendGroupDAO {
+public class FriendGroupDAO extends BaseDAO{
 
 	/**
 	 * @Description:根据uc获取所有好友分组信息
@@ -42,21 +42,21 @@ public class FriendGroupDAO {
 	}
 	
 	/**
-	 * @Description:根据用户昵称获取所有群信息
+	 * @Description:根据用户昵称获取所有分组信息
 	 * @auther: wutp 2016年10月23日
 	 * @param name
 	 * @return
 	 * @return Set<GroupTable>
 	 */
-	public static Set<Friends> getFriendsOfSubGroupByUcAndSunGroupId(String uc,String sno) {
+	public static Set<Friends> getFriendsOfSubGroupByUcAndSunGroupId(String uc,String fgid) {
 		Set<Friends> set = null;
 		Connection conn = ConnectionUtil.getConnection();
 		ResultSet rs = null;
 		try {
-			String sql = " SELECT f.FDATE,f.REMARKS,f.FUC,u.SIGN,u.PHOTOID,u.NICKNAME,u.status";
-			sql += " FROM friends f, userinfo u";
-			sql += " WHERE f.`FUC` = u.`UC` AND f.`UC` = ? AND f.`FSNO` = ?";
-			String[] params = {uc,sno};
+			String sql = " SELECT f.FDATE,f.REMARKS,f.FID,u.SIGN,u.PICTURE,u.NICKNAME,u.status";
+			sql += " FROM friendinfo f, userinfo u";
+			sql += " WHERE f.`FID` = u.`UID` AND f.`UID` = ? AND f.`FGID` = ?";
+			String[] params = {uc,fgid};
 			rs = DbUtils.getResultSet2(conn,sql,params);
 			set =  TableToDomain.resultSetToFriends(rs);
 		} catch (Exception e) {

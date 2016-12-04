@@ -36,17 +36,16 @@ CREATE TABLE `chatinfo` (
 DROP TABLE IF EXISTS `crowdgroup`;
 
 CREATE TABLE `crowdgroup` (
-  `CGID` varchar(10) COLLATE utf8mb4_german2_ci NOT NULL COMMENT '群分组编号',
-  `CGNAME` varchar(20) COLLATE utf8mb4_german2_ci NOT NULL COMMENT '群分组名字',
-  `GID` varchar(10) COLLATE utf8mb4_german2_ci NOT NULL COMMENT '群编号',
-  `UCID` varchar(10) COLLATE utf8mb4_german2_ci NOT NULL COMMENT '用户ID',
-  `GNUMBER` int(10) DEFAULT NULL COMMENT '群个数',
-  PRIMARY KEY (`CGID`,`GID`,`UCID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_german2_ci;
+  `CID` varchar(10) NOT NULL COMMENT '群分组编号',
+  `CNAME` varchar(20) NOT NULL COMMENT '群分组名字',
+  `GID` varchar(10) NOT NULL COMMENT '群编号',
+  `UID` varchar(10) NOT NULL COMMENT '用户ID',
+  PRIMARY KEY (`GID`,`UID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `crowdgroup` */
 
-insert  into `crowdgroup`(`CGID`,`CGNAME`,`GID`,`UCID`,`GNUMBER`) values ('1','大学','1','99999',0),('2','公司','2','99999',0);
+insert  into `crowdgroup`(`CID`,`CNAME`,`GID`,`UID`) values ('1','大学','10001','99999'),('2','公司','10002','99999'),('3','我的群','10003','77777'),('1','我的群','10003','88888'),('2','公司','10003','99999');
 
 /*Table structure for table `friendgroup` */
 
@@ -85,17 +84,17 @@ insert  into `friendinfo`(`FID`,`FGID`,`FDATE`,`UID`,`REMARKS`) values ('11111',
 DROP TABLE IF EXISTS `groupinfo`;
 
 CREATE TABLE `groupinfo` (
-  `GNO` varchar(10) NOT NULL COMMENT '群编号',
+  `GID` varchar(10) NOT NULL COMMENT '群编号',
   `GNAME` varchar(20) DEFAULT NULL COMMENT '群名称',
   `GDATE` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '创建日期',
-  `PICTRUE` varchar(30) DEFAULT NULL COMMENT '群头像',
-  `POWER` varchar(2) DEFAULT NULL COMMENT '权限',
-  PRIMARY KEY (`GNO`)
+  `PICTURE` varchar(30) DEFAULT NULL COMMENT '群头像',
+  `POWER` varchar(10) DEFAULT NULL COMMENT '管理员',
+  PRIMARY KEY (`GID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `groupinfo` */
 
-insert  into `groupinfo`(`GNO`,`GNAME`,`GDATE`,`PICTRUE`,`POWER`) values ('10001','我们的回忆','2016-10-22 23:11:56',NULL,NULL);
+insert  into `groupinfo`(`GID`,`GNAME`,`GDATE`,`PICTURE`,`POWER`) values ('10001','我们的回忆','2016-12-04 17:33:16','Image/Head/184_100.gif','99999'),('10002','一班','2016-12-04 17:33:18','Image/Head/184_100.gif','99999'),('10003','十五班','2016-12-04 17:33:20','Image/Head/184_100.gif','99999');
 
 /*Table structure for table `login` */
 
@@ -141,20 +140,6 @@ CREATE TABLE `text` (
 
 /*Data for the table `text` */
 
-/*Table structure for table `usergroup` */
-
-DROP TABLE IF EXISTS `usergroup`;
-
-CREATE TABLE `usergroup` (
-  `UC` varchar(10) NOT NULL COMMENT 'uc号',
-  `GNO` varchar(10) NOT NULL COMMENT '群编号',
-  PRIMARY KEY (`UC`,`GNO`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-/*Data for the table `usergroup` */
-
-insert  into `usergroup`(`UC`,`GNO`) values ('77777','10001'),('88888','10001'),('99999','10001');
-
 /*Table structure for table `userinfo` */
 
 DROP TABLE IF EXISTS `userinfo`;
@@ -179,7 +164,7 @@ CREATE TABLE `userinfo` (
 
 /*Data for the table `userinfo` */
 
-insert  into `userinfo`(`UID`,`PWD`,`SIGN`,`PICTURE`,`NICKNAME`,`SEX`,`BIRTHDAY`,`CONSTELLATION`,`BLOODTYPE`,`DIPLOMA`,`TELEPHONE`,`EMAIL`,`ADDRESS`,`STATUS`) values ('11111','123','想睡觉','Image/Head/184_100.gif','user1','男','2016-10-16','狮子','B','博士','1212121212112','vito@163.com','香港','0'),('22222','123','无聊','Image/Head/184_100.gif','user2','男','2016-10-16','狮子','B','本科','186172638127','vito@qq.com','北京','0'),('33333','123','just for fun ！','Image/Head/184_100.gif','user3','男','2016-10-16','狮子','B','本科','18366121000','vito@live.com','济南','0'),('77777','123','想睡觉','Image/Head/184_100.gif','system3','男','2016-10-16','狮子','B','博士','1212121212112','vito@163.com','香港','0'),('88888','123','无聊','Image/Head/184_100.gif','system2','男','2016-10-16','狮子','B','本科','186172638127','vito@qq.com','北京','0'),('99999','123','just for fun ！','Image/Head/184_100.gif','system1','男','2016-10-16','狮子','B','本科','18366121000','vito@live.com','济南','0');
+insert  into `userinfo`(`UID`,`PWD`,`SIGN`,`PICTURE`,`NICKNAME`,`SEX`,`BIRTHDAY`,`CONSTELLATION`,`BLOODTYPE`,`DIPLOMA`,`TELEPHONE`,`EMAIL`,`ADDRESS`,`STATUS`) values ('11111','123','想睡觉','Image/Head/184_100.gif','user1','男','2016-10-16','狮子','B','博士','1212121212112','vito@163.com','香港','0'),('22222','123','无聊','Image/Head/184_100.gif','user2','男','2016-10-16','狮子','B','本科','186172638127','vito@qq.com','北京','0'),('33333','123','just for fun ！','Image/Head/184_100.gif','user3','男','2016-10-16','狮子','B','本科','18366121000','vito@live.com','济南','0'),('77777','123','想睡觉','Image/Head/184_100.gif','system3','男','2016-10-16','狮子','B','博士','1212121212112','vito@163.com','香港','1'),('88888','123','无聊','Image/Head/184_100.gif','system2','男','2016-10-16','狮子','B','本科','186172638127','vito@qq.com','北京','0'),('99999','123','just for fun ！','Image/Head/184_100.gif','system1','男','2016-10-16','狮子','B','本科','18366121000','vito@live.com','济南','1');
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;

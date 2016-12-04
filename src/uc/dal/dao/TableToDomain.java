@@ -138,9 +138,9 @@ public class TableToDomain {
 				friend = new Friends();
 				friend.setFdate(rs.getTimestamp("FDATE"));
 				friend.setRemarks(rs.getString("REMARKS"));
-				friend.setFid(rs.getString("FID"));
+				friend.setUid(rs.getString("FID"));
 				friend.setSign(rs.getString("SIGN"));
-				friend.setPhotoid(rs.getString("PHOTOID"));
+				friend.setPhotoid(rs.getString("PICTURE"));
 				friend.setNickname(rs.getString("NICKNAME"));
 				friend.setStatus(rs.getString("STATUS"));
 				
