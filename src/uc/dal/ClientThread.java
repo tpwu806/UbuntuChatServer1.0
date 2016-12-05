@@ -101,7 +101,7 @@ public class ClientThread implements Runnable {
 				}
 				// 更新群好友
 				case MessageType.INIT_FRIEND_LIST: {
-					ActionInitFriendList(bean);
+					//ActionInitFriendList(bean);
 					break;
 				}
 				default: {
@@ -116,10 +116,114 @@ public class ClientThread implements Runnable {
 		}
 	}
 	
-	private void ActionInitFriendList(MessageBean bean2) {
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年10月22日
+	 * @return void
+	 * @throws IOException 
+	 */
+	/*private void ActionSignIn(MessageBean bean) throws IOException{
+		MessageBean mbean = new MessageBean();
+		System.out.println(bean.getType() + ":" + bean.getUser().getUc() + bean.getUser().getPwd());
+		
+		
+		//UserInfo su = ucService.checkUser(bean.getUser());
+		UserInfo su = null;
+		if (su!=null && !"1".equals(su.getStatus())) {
+			System.out.println("sql验证成功");
+			bean.setName(su.getNickname());
+			//发送登录成功消息，更新后台在线列表
+			mbean.setType(MessageType.SIGN_IN_SUCCESS);
+			mbean.setUser(su);
+			
+			//初始化主界面信息
+			Set<GroupTable> groupTables= UcService.getGroupTableByNickName(bean.getName().trim());
+			//mbean = new MessageBean();
+			//mbean.setType(MessageType.INIT_FRIEND_LIST);
+			mbean.setGroups((HashSet<GroupTable>)groupTables);
+			Set<UserInfo> fUsers= (Set<UserInfo>) UcService.getAllFriendsUserInfoByNickName(bean.getName().trim());
+			mbean.setUsers((HashSet<UserInfo>)fUsers);
+			
+			sendSingletonMessage(mbean);
+	
+			// 告诉其他人我上线了
+			Set<UserInfo> allUsers = new HashSet<>();
+			allUsers.addAll(fUsers);
+			for(GroupTable g : groupTables){
+				HashSet<UserInfo> groupFriends= (HashSet<UserInfo>) 
+						ucService.getGroupUserInfoByGname(g.getGname().trim());
+				allUsers.addAll(groupFriends);
+			}
+			allUsers.remove(bean.getName());
+			updateFriendsList(allUsers,bean.getName());
+			
+			ServerServer.signinThreads.put(bean.getName(), this);
+			AppWindow.AddList(bean.getName());
+		} else {
+			mbean = new MessageBean();
+			mbean.setType(MessageType.SIGN_IN_FALSE);
+			if("1".equals(su.getStatus())){
+				mbean.setErrorMessage("已经登陆，不允许重复登录！");
+			}
+			oos = new ObjectOutputStream(clientsocket.getOutputStream());
+			oos.writeObject(mbean);
+			oos.flush();
+	
+			System.out.println("sql验证失败");
+		}
+	}*/
+	
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年11月5日
+	 * @return void
+	 * @throws IOException 
+	 * @throws SQLException 
+	 */
+	private void ActionSignIn(MessageBean bean) 
+			throws IOException, SQLException{
+		MessageBean mbean = new MessageBean();		
+		UserModel userModel = (UserModel) bean.getObject();
+		System.out.println(bean.getType() + ":" 
+				+ userModel.toString()+"-"+userModel.getPassword());
+		ResultObject RO = ucService.checkUser(userModel);
+		
+		if(RO.ErrorCode == 1){
+			System.out.println("sql验证成功");
+			//发送登录成功消息，更新后台在线列表
+			mbean.setType(MessageType.SIGN_IN_SUCCESS);	
+			UserInfoModel userinfo = null;
+			if(RO.ResponseObject != null){
+				userinfo = (UserInfoModel) RO.ResponseObject;
+				mbean.setObject(userinfo);
+			}						
+			sendSingletonMessage(mbean);
+			//告诉其他人我上线了
+			MessageBean mbean2 = new MessageBean();
+			mbean2.setType(MessageType.SERVER_UPDATE_FRIENDS);
+			mbean2.setObject(userinfo.getUserModel());
+			ArrayList<String> clients = UserInfoDAO.getAllFriendsByUc(userModel.toString());
+			if(clients != null)
+				sendMessage(mbean2,clients);
+			ServerServer.signinThreads.put(userModel.toString(), this);
+			AppWindow.AddList(userinfo.getUserModel().getNickName());				
+		}else if(RO.ErrorCode == 0){			
+			mbean = new MessageBean();
+			mbean.setType(MessageType.SIGN_IN_FALSE);			
+			mbean.setErrorMessage("服务器异常！");	
+			sendSingletonMessage(mbean);	
+		} else {
+			mbean = new MessageBean();
+			mbean.setType(MessageType.SIGN_IN_FALSE);			
+			mbean.setErrorMessage(RO.ErrorString);	
+			sendSingletonMessage(mbean);
+		}
+	}
+
+	/*private void ActionInitFriendList(MessageBean bean2) {
 		// TODO Auto-generated method stub
 		
-	}
+	}*/
 
 	/**
 	 * @Description:
@@ -177,51 +281,6 @@ public class ClientThread implements Runnable {
 			System.out.println("sql验证失败");
 		}
 	}*/
-	
-	/**
-	 * @Description:
-	 * @auther: wutp 2016年11月5日
-	 * @return void
-	 * @throws IOException 
-	 * @throws SQLException 
-	 */
-	private void ActionSignIn(MessageBean bean) 
-			throws IOException, SQLException{
-		MessageBean mbean = new MessageBean();		
-		UserModel userModel = (UserModel) bean.getObject();
-		System.out.println(bean.getType() + ":" 
-				+ userModel.toString()+"-"+userModel.getPassword());
-		ResultObject RO = ucService.checkUser(userModel);
-		
-		if(RO.ErrorCode == 1){
-			System.out.println("sql验证成功");
-			//发送登录成功消息，更新后台在线列表
-			mbean.setType(MessageType.SIGN_IN_SUCCESS);
-					
-			UserInfoModel userinfo = UcService.verificationUser(userModel);
-			mbean.setObject(userinfo);
-			sendSingletonMessage(mbean);
-			//告诉其他人我上线了
-			MessageBean mbean2 = new MessageBean();
-			mbean2.setType(MessageType.SERVER_UPDATE_FRIENDS);
-			mbean2.setObject(userModel.toString());
-			ArrayList<String> clients = UserInfoDAO.getAllFriendsByUc(userModel.toString());
-			if(clients != null)
-				sendMessage(mbean2,clients);
-			ServerServer.signinThreads.put(userModel.toString(), this);
-			AppWindow.AddList(userinfo.getUserModel().getNickName());				
-		}else if(RO.ErrorCode == 0){			
-			mbean = new MessageBean();
-			mbean.setType(MessageType.SIGN_IN_FALSE);			
-			mbean.setErrorMessage("服务器异常！");	
-			sendSingletonMessage(mbean);	
-		} else {
-			mbean = new MessageBean();
-			mbean.setType(MessageType.SIGN_IN_FALSE);			
-			mbean.setErrorMessage(RO.ErrorString);	
-			sendSingletonMessage(mbean);
-		}
-	}
 	
 	/**
 	 * @Description:

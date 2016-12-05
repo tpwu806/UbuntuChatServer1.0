@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
@@ -111,7 +112,11 @@ public class ServerServer implements Runnable{
 	 */
 	private void initUserStatus(){
 		UcService UcService = new UcService();
-		UcService.initUserStatus2();
+		try {
+			UcService.initUserStatus2();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override

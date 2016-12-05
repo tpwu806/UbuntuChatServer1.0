@@ -34,26 +34,39 @@ public class UcService {
 	 * @param userModel
 	 * @return
 	 * @return UserInfo
+	 * @throws SQLException 
 	 */
-	public ResultObject checkUser(UserModel userModel) {
+	public ResultObject checkUser(UserModel userModel) throws SQLException {
 		ResultObject PO = new ResultObject();
-		UserInfo suser = null;	
-		suser = UserInfoDAO.getUserInfoByUc(userModel.getUcId().trim());
-		if(suser == null){
-			return PO = new ResultObject(null, -1, "查无此账号，请先注册！");
-		}
-		suser = UserInfoDAO.getUserInfoByUcAndPwd(
-				userModel.getUcId().trim(), userModel.getPassword().trim());		
-		if(suser == null){
-			return PO = new ResultObject(null, -1, "密码错误，请输入正确密码！");
-		}
-		if( "0".equals(suser.getStatus().trim())){
-			PO = new ResultObject(suser, 1, "");
-			UserInfoDAO.UpdateSatusByNickNameAndStatus(
-					suser.getNickname().trim(),1);			
-		}else{
-			PO = new ResultObject(null, -1, "已经登陆，不允许重复登陆");			
-		}
+		UserInfo suser = null;
+		try{
+			boolean b = UserInfoDAO.getBooleanByUc(userModel.getUcId().trim());
+			if(!b){
+				return PO = new ResultObject(null, -1, "查无此账号，请先注册！");
+			}
+			suser = UserInfoDAO.getUserInfoByUcAndPwd(
+					userModel.getUcId().trim(), userModel.getPassword().trim());		
+			if(suser == null){
+				return PO = new ResultObject(null, -1, "密码错误，请输入正确密码！");
+			}
+			if( !"0".equals(suser.getStatus().trim())){
+				PO = new ResultObject(null, -1, "已经登陆，不允许重复登陆");			
+			}else{
+				userModel.setNickName(suser.getNickname());
+				userModel.setSignature(suser.getSign());
+				String img = suser.getPhotoid();
+				if(img != null && !"".equals(img)){
+					userModel.setHeadURL(ImagesFunction.getImage(img));
+				}				
+				UserInfoModel userInfoModel = verificationUser(userModel);
+				PO = new ResultObject(userInfoModel, 1, "");
+				UserInfoDAO.UpdateSatusByNickNameAndStatus(
+						suser.getNickname().trim(),1);						
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			PO = new ResultObject(null, -1, e.getMessage());
+		}		
 		return PO;
 	}
 	
@@ -79,8 +92,13 @@ public class UcService {
 	 * @auther: wutp 2016年11月27日
 	 * @return void
 	 */
-	public void initUserStatus2(){
-		UserInfoDAO.UpdateSatus();
+	public void initUserStatus2() throws SQLException{
+		try{
+			UserInfoDAO.UpdateSatus();
+		}catch(Exception e){
+			e.printStackTrace();
+			throw e;
+		}		
 	}
 	
 	/**
@@ -148,55 +166,57 @@ public class UcService {
 	 * @throws SQLException
 	 * @return UserInformation
 	 */
-	public static UserInfoModel verificationUser(UserModel userModel) throws SQLException {
+	private static UserInfoModel verificationUser(UserModel userModel) throws SQLException {
 		UserInfoModel userInfoModel = null ;
-		
-		// 取得账户信息
-		String uc = userModel.getUcId();
-		UserInfo userinfo = UserInfoDAO.getUserInfoByUc(uc);
-		userModel.setNickName(userinfo.getNickname());
-		Set<FriendGroup> FriendGroups = null;							
-		//继续查询该用户的分组			
-		FriendGroups = FriendGroupDAO.getSubGroupByUc(uc);
-		ArrayList<FriendGroupModel> friendGroupModels = new ArrayList<FriendGroupModel>();
-		if(FriendGroups != null){
-			for(FriendGroup friendGroup : FriendGroups) {
-				// 取得分组名并构建
-				String groupName = friendGroup.getSname();
-				FriendGroupModel group = new FriendGroupModel(groupName);
-				group.setSid(friendGroup.getSid());
-				group.setUid(friendGroup.getUid());
-				//继续查询该分组下的好友
-				Set<Friends> friends = FriendGroupDAO.getFriendsOfSubGroupByUcAndSunGroupId(uc, group.getSid().toString().trim());
-				if(friends != null && friends.size() > 0){
-					for (Friends friend : friends) {
-						;
-						byte[] head = ImagesFunction.getImage(friend.getPhotoid());
-						boolean hasUpdate = false;
-						switch (friend.getStatus()) {
-						case "0":
-							hasUpdate = false;
-						case "1":
-							hasUpdate = true;
+
+		String uc = userModel.getUcId();		
+		Set<FriendGroup> FriendGroups = null;
+		try{
+			//继续查询该用户的分组			
+			FriendGroups = FriendGroupDAO.getSubGroupByUc(uc);
+			ArrayList<FriendGroupModel> friendGroupModels = new ArrayList<FriendGroupModel>();
+			if(FriendGroups != null){
+				for(FriendGroup friendGroup : FriendGroups) {
+					// 取得分组名并构建
+					String groupName = friendGroup.getSname();
+					FriendGroupModel group = new FriendGroupModel(groupName);
+					group.setSid(friendGroup.getSid());
+					group.setUid(friendGroup.getUid());
+					//继续查询该分组下的好友
+					Set<Friends> friends = FriendGroupDAO.getFriendsOfSubGroupByUcAndSunGroupId(uc, group.getSid().toString().trim());
+					if(friends != null && friends.size() > 0){
+						for (Friends friend : friends) {
+							;
+							byte[] head = ImagesFunction.getImage(friend.getPhotoid());
+							boolean hasUpdate = false;
+							switch (friend.getStatus()) {
+							case "0":
+								hasUpdate = false;
+							case "1":
+								hasUpdate = true;
+							}
+							FriendItemModel friendModel = new FriendItemModel(
+									head, 
+									friend.getRemarks(), 
+									friend.getNickname(),
+									hasUpdate, 
+									friend.getSign(), 
+									friend.getUid().toString(),
+									friend.getStatus());
+										
+							group.add(friendModel);
 						}
-						FriendItemModel friendModel = new FriendItemModel(
-								head, 
-								friend.getRemarks(), 
-								friend.getNickname(),
-								hasUpdate, 
-								friend.getSign(), 
-								friend.getUid().toString(),
-								friend.getStatus());
-									
-						group.add(friendModel);
 					}
+					friendGroupModels.add(group);
 				}
-				friendGroupModels.add(group);
 			}
-		}
-		//群信息
-		ArrayList<CrowdGroupModel> groupsList = CrowdGroupDAO.getCrowdGroupList(uc);
-		userInfoModel = new UserInfoModel(userModel,friendGroupModels,groupsList);
+			//群信息
+			ArrayList<CrowdGroupModel> groupsList = CrowdGroupDAO.getCrowdGroupList(uc);
+			userInfoModel = new UserInfoModel(userModel,friendGroupModels,groupsList);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw e;
+		}		
 		return userInfoModel;	
 	}	
 	

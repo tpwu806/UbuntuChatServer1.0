@@ -22,6 +22,7 @@ public class UserInfoDAO extends BaseDAO{
 	 * @return
 	 * @return Set<UserInfo>
 	 */
+	@Deprecated
 	public static UserInfo getUserInfoByNickName(String name) {
 		UserInfo u = null;
 		Connection conn = ConnectionUtil.getConnection();
@@ -50,51 +51,56 @@ public class UserInfoDAO extends BaseDAO{
 	 * @return
 	 * @return UserInfo
 	 */
+	@Deprecated
 	public static UserInfo getUserInfoByUc(String uc) {
 		UserInfo u = null;
 		Connection conn = ConnectionUtil.getConnection();
-		ResultSet rs = null;
 		try {
 			String sql = "SELECT * FROM userinfo WHERE UID = ? ";			
-			String[] params = {uc};
-			rs = DbUtils.getResultSet2(conn,sql,params);
-			if(rs.next())
-				u =  TableToDomain.resultSetUserInfo(rs);
+			String[] params = {uc};			
+			int num = DbUtils.getExecuteCount(conn,sql,params);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			try {
-				ConnectionUtil.BackPreparedStatement(conn,null, rs);
+			/*try {
+				//ConnectionUtil.BackPreparedStatement(conn,null, rs);
 			} catch (SQLException e) {
 				e.printStackTrace();
-			}
+			}*/
 		}
 		return u;
 	}
-
+	
 	/**
 	 * @Description:根据昵称获取用户信息
-	 * @param name
+	 * @auther: wutp 2016年12月5日
+	 * @param uc
+	 * @param pwd
 	 * @return
-	 * @return Set<UserInfo>
+	 * @return UserInfo
 	 */
-	public static UserInfo getUserInfoByUcAndPwd(String uc,String pwd) {
+	public static UserInfo getUserInfoByUcAndPwd(String uc,String pwd) throws SQLException{
 		UserInfo u = null;
-		Connection conn = ConnectionUtil.getConnection();
-		ResultSet rs = null;
 		try {
 			String sql = "select * from USERINFO where  UID = ? and PWD = ?";
-			String[] params = {uc,pwd};
-			rs = DbUtils.getResultSet2(conn,sql,params);
-			u =  TableToDomain.resultSetUserInfo(rs);
+			Object[] params = {uc,pwd};
+			List<Object> list = new UserInfoDAO().getResultList(sql, params);
+			if(list != null && list.size()>0){
+				for(Object o : list){	
+					@SuppressWarnings("unchecked")
+					Map<String, Object> map = (Map<String, Object>) o;					
+					u = new UserInfo();
+					u.setNickname(map.get("NICKNAME").toString());
+					u.setPhotoid(map.get("PICTURE").toString());
+					u.setSign(map.get("SIGN").toString());
+					u.setStatus(map.get("STATUS").toString());
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw e;
 		} finally {
-			try {
-				ConnectionUtil.BackPreparedStatement(conn,null, rs);
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			
 		}
 		return u;
 	}
@@ -316,6 +322,33 @@ public class UserInfoDAO extends BaseDAO{
 		} finally {			
 		}
 		return fList;
+	}
+
+	/**
+	 * @Description:
+	 * @auther: wutp 2016年12月5日
+	 * @param trim
+	 * @return
+	 * @return boolean
+	 * @throws Exception 
+	 */
+	public static boolean getBooleanByUc(String uid) throws Exception {
+		boolean b = false;
+		Connection conn = ConnectionUtil.getConnection();
+		try {
+			String sql = "SELECT 1 FROM userinfo where UID = ? ";
+			String[] params = {uid};
+			int num = DbUtils.getExecuteCount(conn,sql,params);
+			if(num == 1){
+				b = true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		} finally {
+			
+		}
+		return b;
 	}
 
 	public static void main(String[] args) {
