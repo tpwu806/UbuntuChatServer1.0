@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import uc.common.MessageBean;
+import uc.common.MessageModel;
 import uc.common.MessageType;
 import uc.common.UserModel;
 import uc.common.UserInfoModel;
@@ -91,7 +92,7 @@ public class ClientThread implements Runnable {
 				}
 				// 一对一聊天
 				case MessageType.SINGLETON_CHAT: { 					
-					//ActionSingletonChat(bean);					
+					ActionSingletonChat(bean);					
 					break;
 				}
 				// 更新群好友
@@ -353,21 +354,19 @@ public class ClientThread implements Runnable {
 	 * @auther: wutp 2016年10月16日
 	 * @param serverBean
 	 * @return void
-	 *//*
+	 */
 	private void ActionSingletonChat(MessageBean bean)throws IOException{
 		ObjectOutputStream oos;
 		MessageBean serverBean;
 		try {		
 		Set<String> onlines = ServerServer.signinThreads.keySet();
-		if(onlines.contains(bean.getFriendName())){
-			Socket c = ServerServer.signinThreads.get(bean.getFriendName()).clientsocket;	
+		MessageModel m = (MessageModel) bean.getObject();
+		if(onlines.contains(m.getRecerver())){
+			Socket c = ServerServer.signinThreads.get(m.getRecerver()).clientsocket;	
 			
 			serverBean = new MessageBean();
 			serverBean.setType(MessageType.SINGLETON_CHAT);
-			serverBean.setName(bean.getName());
-			serverBean.setFriendName(bean.getFriendName());
-			serverBean.setTimer(bean.getTimer());
-			serverBean.setInfo(bean.getInfo());
+			serverBean.setObject(m);
 			
 			oos = new ObjectOutputStream(c.getOutputStream());
 			oos.writeObject(serverBean);
@@ -379,7 +378,7 @@ public class ClientThread implements Runnable {
 		
 	}
 	
-	*//**
+	/**
 	 * @Description:
 	 * @auther: wutp 2016年10月22日
 	 * @param bean
